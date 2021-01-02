@@ -7,32 +7,31 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	log "github.com/sirupsen/logrus"
+	"robpike.io/filter"
 
-    RuleSet "./linter/ruleset"
+	RuleSet "./linter/ruleset"
+
+	"./linter"
 )
 
 func main() {
 	log.Debug("We have", len(RuleSet.Get()), "ruleset.")
 
-	filePath := "./Dockerfile"
+	/* CLI - TODO */
+	filePath := os.Args[1]
 
+	/* Parse Dockerfile */
 	stageList, metaArgs, err := getDockerfileAst(filePath)
 	if err != nil {
 		log.Error("Cannot create Dockerfile AST from \"", filePath, "\".", err)
 	}
-
 	log.Debug("metaArgs |", metaArgs)
 
-	// OK, now we have the AST of the Dockerfile
-	for _, stage := range stageList {
-		for _, command := range stage.Commands {
-			for _, rule := range RuleSet.Get() {
-				if !rule.ValidationFunc(command) {
-					log.Debug("Failed on rule", rule.Name)
-				}
-			}
-		}
-	}
+	/* Run Linter */
+	var ruleValidationResultArray []RuleSet.RuleValidationResult = linter.Run(stageList)
+	violations := filter.Choose(ruleValidationResultArray,
+		                        func(x RuleSet.RuleValidationResult) bool { return x.IsViolated() } )
+
 }
 
 func getDockerfileAst(filePathString string) (stages []instructions.Stage, metaArgs []instructions.ArgCommand,
