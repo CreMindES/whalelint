@@ -18,7 +18,7 @@ var (
 )
 
 type Rule struct {
-	Name           string
+	id             string
 	description    string
 	severity       Severity
 	ValidationFunc func(command instructions.Command) bool
@@ -35,9 +35,21 @@ func NewRule(name string, description string, severity Severity,
 		validationFunc,
 	})
 
-	log.Trace("New rule,", all[len(all)-1].Name, "added.")
+	log.Trace("New rule,", all[len(all)-1].Id, "added.")
 
 	return true
+}
+
+func (rule *Rule) Id() string {
+	return rule.id
+}
+
+func (rule *Rule) Severity() Severity {
+	return rule.severity
+}
+
+func (rule *Rule) Description() string {
+	return rule.description
 }
 
 func Get() []Rule {
