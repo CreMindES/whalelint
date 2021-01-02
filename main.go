@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -32,6 +34,14 @@ func main() {
 	violations := filter.Choose(ruleValidationResultArray,
 		                        func(x RuleSet.RuleValidationResult) bool { return x.IsViolated() } )
 
+	/* JSON */
+	resultJson, err := json.Marshal(violations)
+
+	fmt.Println(string(resultJson))
+
+	//log.WithFields(log.Fields{
+	//	"getParameters": string(resultJson),
+	//}).Info("Request received!")
 }
 
 func getDockerfileAst(filePathString string) (stages []instructions.Stage, metaArgs []instructions.ArgCommand,

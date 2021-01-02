@@ -1,6 +1,7 @@
 package ruleset
 
 import (
+	"encoding/json"
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	log "github.com/sirupsen/logrus"
 )
@@ -56,10 +57,34 @@ func (rule *Rule) ValidationFunc(command instructions.Command) RuleValidationRes
 	return rule.validationFunc(command)
 }
 
+func (rule Rule) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Id           string
+		Description  string
+		Severity     string
+	} {
+		Id:          rule.id,
+		Description: rule.description,
+		Severity:    rule.severity.name,
+	})
+}
+
 type RuleValidationResult struct {
-	rule          Rule
-	isViolated    bool
-	LocationRange Range
+	rule          Rule   `json:"rule"`
+	isViolated    bool	 `json:"is_violated"`
+	LocationRange Range	 `json:"location_range"`
+}
+
+func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Rule		  Rule
+		IsViolated    bool
+		LocationRange Range
+	} {
+		Rule:          ruleValidationResult.rule,
+		IsViolated:    ruleValidationResult.isViolated,
+		LocationRange: ruleValidationResult.LocationRange,
+	})
 }
 
 func (ruleValidationResult RuleValidationResult) IsViolated() bool {
@@ -77,8 +102,8 @@ func (ruleValidationResult *RuleValidationResult) Location() Range {
 func (ruleValidationResult *RuleValidationResult) SetLocation(startLineNUmber, startCharNumber, endLineNumber, endCharNumber int) {
 	ruleValidationResult.LocationRange.start.lineNumber = startLineNUmber
 	ruleValidationResult.LocationRange.start.charNumber = startCharNumber
-	ruleValidationResult.LocationRange.end.lineNumber = endLineNumber
-	ruleValidationResult.LocationRange.end.charNumber = endCharNumber
+	ruleValidationResult.LocationRange.end.lineNumber   = endLineNumber
+	ruleValidationResult.LocationRange.end.charNumber   = endCharNumber
 }
 
 func (ruleValidationResult *RuleValidationResult) SetRule(rule Rule) {
@@ -103,12 +128,32 @@ func (location *Location) CharNumber() int {
 	return location.charNumber
 }
 
+func (location Location) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		LineNumber int
+		CharNumber int
+	} {
+		LineNumber: location.lineNumber,
+		CharNumber: location.charNumber,
+	})
+}
+
 func (locationRange *Range) Start() Location {
 	return locationRange.start
 }
 
 func (locationRange *Range) End() Location {
 	return locationRange.end
+}
+
+func (locationRange Range) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Start Location
+		End   Location
+	}{
+		Start: locationRange.start,
+		End:   locationRange.end,
+	})
 }
 
 func Get() []Rule {
