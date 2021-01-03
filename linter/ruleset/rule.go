@@ -70,16 +70,16 @@ func (rule Rule) MarshalJSON() ([]byte, error) {
 }
 
 type RuleValidationResult struct {
-	rule          Rule   `json:"rule"`
-	isViolated    bool	 `json:"is_violated"`
-	LocationRange Range	 `json:"location_range"`
+	rule          Rule
+	isViolated    bool
+	LocationRange Range
 }
 
 func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Rule		  Rule
-		IsViolated    bool
-		LocationRange Range
+		Rule		  Rule	`json:"Rule"`
+		IsViolated    bool	`json:"IsViolated"`
+		LocationRange Range	`json:"LocationRange"`
 	} {
 		Rule:          ruleValidationResult.rule,
 		IsViolated:    ruleValidationResult.isViolated,
