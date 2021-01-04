@@ -112,6 +112,33 @@ func (ruleValidationResult *RuleValidationResult) SetLocation(startLineNUmber, s
 	ruleValidationResult.LocationRange.end.charNumber   = endCharNumber
 }
 
+func (ruleValidationResult *RuleValidationResult) SetLocationRangeFrom(locationRange LocationRange) {
+	ruleValidationResult.LocationRange = locationRange
+}
+
+func LocationRangeFromCommand(command instructions.Command) LocationRange {
+	location := LocationRange{
+		start: Location{
+			lineNumber: 0,
+			charNumber: 0,
+		},
+		end:   Location{
+			lineNumber: 0,
+			charNumber: 0,
+		},
+	}
+
+	commandLocation := command.Location()
+	if commandLocation != nil {
+		location.start.lineNumber = commandLocation[0].Start.Line
+		location.start.charNumber = commandLocation[0].Start.Character
+		location.end.lineNumber   = commandLocation[0].End.Line
+		location.end.charNumber   = commandLocation[0].End.Character
+	}
+
+	return location
+}
+
 func (ruleValidationResult *RuleValidationResult) SetRule(rule Rule) {
 	ruleValidationResult.rule = rule
 }

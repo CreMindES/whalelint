@@ -12,20 +12,14 @@ var _ = NewRule("DL3000", "WORKDIR should be an absolute path for clarity and re
 
 func ValidateDl3000(command instructions.Command) RuleValidationResult {
 	result := RuleValidationResult{
-		isViolated: false,
+		isViolated:    false,
+		LocationRange: LocationRangeFromCommand(command),
 	}
 
 	if workdirCommand, ok := command.(*instructions.WorkdirCommand); ok {
 		if filepath.IsAbs(workdirCommand.Path) == false {
 			result.SetViolated()
-
-			var lineString = workdirCommand.String()
-
-			result.SetLocation(
-				workdirCommand.Location()[0].Start.Line,
-				workdirCommand.Location()[0].Start.Character,
-				workdirCommand.Location()[0].End.Line,
-				workdirCommand.Location()[0].End.Character + len(lineString))
+			result.LocationRange.end.charNumber += len(workdirCommand.String())
 		}
 	}
 
