@@ -36,7 +36,7 @@ func NewRule(name string, description string, severity Severity,
 		validationFunc,
 	})
 
-	log.Trace("New rule,", all[len(all)-1].Id, "added.")
+	log.Trace("New rule,", all[len(all)-1].Id(), "added.")
 
 	return true
 }
