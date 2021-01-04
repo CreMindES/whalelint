@@ -91,8 +91,14 @@ func (ruleValidationResult RuleValidationResult) IsViolated() bool {
 	return ruleValidationResult.isViolated
 }
 
-func (ruleValidationResult *RuleValidationResult) SetViolated() {
-	ruleValidationResult.isViolated = true
+func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
+	if len(params) == 0 {
+		ruleValidationResult.isViolated = true
+	} else if len(params) == 1 {
+		ruleValidationResult.isViolated = params[0]
+	} else {
+		log.Error("Invalid params to RuleValidationResult::SetViolated")
+	}
 }
 
 func (ruleValidationResult *RuleValidationResult) Location() LocationRange {
