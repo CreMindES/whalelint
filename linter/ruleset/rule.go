@@ -72,14 +72,14 @@ func (rule Rule) MarshalJSON() ([]byte, error) {
 type RuleValidationResult struct {
 	rule          Rule
 	isViolated    bool
-	LocationRange Range
+	LocationRange LocationRange
 }
 
 func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Rule		  Rule	`json:"Rule"`
-		IsViolated    bool	`json:"IsViolated"`
-		LocationRange Range	`json:"LocationRange"`
+		Rule          Rule          `json:"Rule"`
+		IsViolated    bool          `json:"IsViolated"`
+		LocationRange LocationRange `json:"LocationRange"`
 	} {
 		Rule:          ruleValidationResult.rule,
 		IsViolated:    ruleValidationResult.isViolated,
@@ -95,7 +95,7 @@ func (ruleValidationResult *RuleValidationResult) SetViolated() {
 	ruleValidationResult.isViolated = true
 }
 
-func (ruleValidationResult *RuleValidationResult) Location() Range {
+func (ruleValidationResult *RuleValidationResult) Location() LocationRange {
 	return ruleValidationResult.LocationRange
 }
 
@@ -110,7 +110,7 @@ func (ruleValidationResult *RuleValidationResult) SetRule(rule Rule) {
 	ruleValidationResult.rule = rule
 }
 
-type Range struct {
+type LocationRange struct {
 	start Location
 	end   Location
 }
@@ -138,15 +138,15 @@ func (location Location) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (locationRange *Range) Start() Location {
+func (locationRange *LocationRange) Start() Location {
 	return locationRange.start
 }
 
-func (locationRange *Range) End() Location {
+func (locationRange *LocationRange) End() Location {
 	return locationRange.end
 }
 
-func (locationRange Range) MarshalJSON() ([]byte, error) {
+func (locationRange LocationRange) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Start Location
 		End   Location
