@@ -6,17 +6,31 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Severity struct {
-	level int
-	name  string
-}
+// Severity type represents a severity, with an int level and a String function.
+type Severity int
 
-var (
-	Deprecation = Severity{3, "Deprecation"}
-	Error       = Severity{0, "Error"}
-	Info        = Severity{2, "Info"}
-	Warning     = Severity{1, "Warning"}
+const (
+	ValError Severity = iota
+	ValDeprecation
+	ValInfo
+	ValWarning
 )
+
+// Severity.String() converts the raw Severity into a string.
+func (severity Severity) String() string {
+	switch severity {
+	case ValDeprecation:
+		return "Deprecation"
+	case ValError:
+		return "Error"
+	case ValInfo:
+		return "Info"
+	case ValWarning:
+		return "Warning"
+	default:
+		return "Unknown"
+	}
+}
 
 type Rule struct {
 	id             string
@@ -65,7 +79,7 @@ func (rule Rule) MarshalJSON() ([]byte, error) {
 	} {
 		Id:          rule.id,
 		Description: rule.description,
-		Severity:    rule.severity.name,
+		Severity:    rule.severity.String(),
 	})
 }
 

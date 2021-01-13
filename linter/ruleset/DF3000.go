@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var _ = NewRule("DL3000", "WORKDIR should be an absolute path for clarity and reliability.", Warning,
-	            ValidateDl3000)
+var _ = NewRule("DL3000", "WORKDIR should be an absolute path for clarity and reliability.", ValWarning,
+	ValidateDl3000)
 
 func ValidateDl3000(command instructions.Command) RuleValidationResult {
 	result := RuleValidationResult{
