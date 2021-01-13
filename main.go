@@ -1,5 +1,6 @@
 package main
 
+// nolint
 import (
 	"encoding/json"
 	"fmt"
@@ -11,41 +12,34 @@ import (
 	log "github.com/sirupsen/logrus"
 	"robpike.io/filter"
 
+	Linter  "./linter"
 	RuleSet "./linter/ruleset"
-
-	"./linter"
 )
 
 func main() {
-	log.Debug("We have", len(RuleSet.Get()), "ruleset.")
+	log.Debug("We have", RuleSet.Get().Count(), "ruleset.")
 
 	/* CLI - TODO */
 	filePath := os.Args[1]
 
 	/* Parse Dockerfile */
-	stageList, metaArgs, err := getDockerfileAst(filePath)
-	if err != nil {
-		log.Error("Cannot create Dockerfile AST from \"", filePath, "\".", err)
+	stageList, metaArgs := getDockerfileAst(filePath)
+	if metaArgs != nil {
+		log.Debug("metaArgs |", metaArgs)
 	}
-	log.Debug("metaArgs |", metaArgs)
 
 	/* Run Linter */
-	var ruleValidationResultArray []RuleSet.RuleValidationResult = linter.Run(stageList)
+	ruleValidationResultArray := Linter.Run(stageList)
 	violations := filter.Choose(ruleValidationResultArray,
-		                        func(x RuleSet.RuleValidationResult) bool { return x.IsViolated() } )
+		func(x RuleSet.RuleValidationResult) bool {
+			return x.IsViolated()
+		})
 
-	/* JSON */
-	resultJSON, err := json.Marshal(violations)
-
-	fmt.Println(string(resultJSON))
-
-	// log.WithFields(log.Fields{
-	// 	"getParameters": string(resultJSON),
-	// }).Info("Request received!")
+	/* Print result | TODO: cli dependent output */
+	printResultAsJSON(violations)
 }
 
-func getDockerfileAst(filePathString string) (stages []instructions.Stage, metaArgs []instructions.ArgCommand,
-	err error) {
+func getDockerfileAst(filePathString string) (stages []instructions.Stage, metaArgs []instructions.ArgCommand) {
 	filePath := filepath.Clean(filePathString)
 
 	fileHandle, err := os.Open(filePath)
@@ -55,13 +49,22 @@ func getDockerfileAst(filePathString string) (stages []instructions.Stage, metaA
 
 	dockerfile, err := parser.Parse(fileHandle)
 	if err != nil {
-		log.Error("Cannot parser Dockerfile \"", filePath, "\"", err)
+		log.Error("Cannot parse Dockerfile \"", filePath, "\"", err)
 	}
 
 	stageList, metaArgs, err := instructions.Parse(dockerfile.AST)
 	if err != nil {
+		log.Error("Cannot create Dockerfile AST from \"", filePath, "\".", err)
+	}
+
+	return stageList, metaArgs
+}
+
+func printResultAsJSON(violations interface{}) {
+	resultJSON, err := json.Marshal(violations)
+	if err != nil {
 		log.Error(err)
 	}
 
-	return stageList, metaArgs, err
+	fmt.Println(string(resultJSON)) // nolint:forbidigo
 }
