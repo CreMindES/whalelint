@@ -5,7 +5,7 @@ import (
 
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 
-	RuleSet "../ruleset"
+	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 )
 
 func TestValidateDl3000(t *testing.T) {

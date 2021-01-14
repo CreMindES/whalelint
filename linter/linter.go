@@ -1,11 +1,10 @@
 package linter
 
-// nolint:gci
 import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	log "github.com/sirupsen/logrus"
 
-	RuleSet "./ruleset"
+	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 )
 
 // nolint:nestif, funlen, gocognit
