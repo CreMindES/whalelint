@@ -1,196 +1,159 @@
+// ruleset provides a set of rules and their corresponding validator functions
+// for linting Dockerfile AST elements.
 package ruleset
 
 import (
 	"encoding/json"
-	"github.com/moby/buildkit/frontend/dockerfile/instructions"
+	"reflect"
+
 	log "github.com/sirupsen/logrus"
 )
 
-type Severity struct {
-	level int
-	name  string
-}
+// Severity type represents a severity, with an int level and a String function.
+type Severity int
 
-var (
-	Deprecation = Severity{3, "Deprecation"}
-	Error       = Severity{0, "Error"}
-	Info        = Severity{2, "Info"}
-	Warning     = Severity{1, "Warning"}
+const (
+	ValError Severity = iota
+	ValDeprecation
+	ValInfo
+	ValWarning
 )
 
+// Severity.String() converts the raw Severity into a string.
+func (severity Severity) String() string {
+	switch severity {
+	case ValDeprecation:
+		return "Deprecation"
+	case ValError:
+		return "Error"
+	case ValInfo:
+		return "Info"
+	case ValWarning:
+		return "Warning"
+	default:
+		return "Unknown"
+	}
+}
+
+// Rule represents a Dockerfile lint validation rule.
+// It has the basic id, description, severity attributes and a validation function as an
+// empty interface. For further details on validateFunc, please see Validate how it is
+// utilized.
 type Rule struct {
 	id             string
 	description    string
 	severity       Severity
-	validationFunc func(command instructions.Command) RuleValidationResult
+	validationFunc interface{}
 }
 
-func NewRule(name string, description string, severity Severity,
-	validationFunc func(command instructions.Command) RuleValidationResult) bool {
-	log.Trace("NewRule called")
+// Validation calls the the rule's validationFunc validation function
+// in the correct form, after converting from interface{} to the concrete type.
+//
+// example: func(runCommand *instructions.RunCommand) RuleValidationResult where runCommand is
+// asserted param as *instructions.RunCommand.
+func (rule Rule) Validate(param interface{}) RuleValidationResult {
+	// Assemble validationFunc reflect type, based on param type, as they are always
+	// func(param *paramActualType) RuleValidationResult
+	paramType := reflect.TypeOf(param)
+	returnType := reflect.TypeOf(RuleValidationResult{})
+	funcType := reflect.FuncOf([]reflect.Type{paramType}, []reflect.Type{returnType}, false)
+	funcReflect := reflect.ValueOf(rule.validationFunc).Convert(funcType)
+	log.Trace("RuleSet | ValidationReflect> funcType:", funcType)
 
-	all = append(all, Rule{
-		name,
-		description,
-		severity,
-		validationFunc,
-	})
+	// Type assert param into the actual type
+	paramCasted := reflect.ValueOf(param).Convert(paramType)
 
-	log.Trace("New rule,", all[len(all)-1].Id(), "added.")
+	// Call the reflection function representation
+	funcReflectResult := funcReflect.Call([]reflect.Value{paramCasted})
+
+	// Get back actual result and assign rule to rule validation result
+	result, ok := funcReflectResult[0].Interface().(RuleValidationResult)
+	if ok {
+		result.rule = rule
+	} else {
+		log.Error("Cannot retrieve RuleValidationResult from reflect call.")
+	}
+
+	return result
+}
+
+// NewRule creates a new Rule by joining it's id, description, severity and validation function.
+// It automatically gets assigned into a slice/set of rules corresponding to a specific
+// Dockerfile AST element, inside the ruleMap's corresponding bin, based on the Dockerfile AST
+// element's type. See below, how reflect.TypeOf().String() is used to achieve this.
+func NewRule(id string, description string, severity Severity, param interface{}) interface{} {
+	rule := Rule{
+		id:             id,
+		description:    description,
+		severity:       severity,
+		validationFunc: param,
+	}
+
+	targetBin := reflect.TypeOf(param).In(0).String()
+
+	if val, ok := ruleMap[targetBin]; ok {
+		ruleMap[targetBin] = append(val, rule)
+	} else {
+		ruleMap[targetBin] = []Rule{rule}
+	}
 
 	return true
 }
 
-func (rule *Rule) Id() string {
+// ID returns the rule's id string.
+func (rule *Rule) ID() string {
 	return rule.id
 }
 
+// Severity returns the rule's severity, e.g. error, warning, info, deprecation.
 func (rule *Rule) Severity() Severity {
 	return rule.severity
 }
 
+// Description returns the rule's description, i.e. the rule itself as a statement/guidance.
 func (rule *Rule) Description() string {
 	return rule.description
 }
 
-func (rule *Rule) ValidationFunc(command instructions.Command) RuleValidationResult {
-	return rule.validationFunc(command)
-}
-
+// MarshalJSON converts a Rule instance to JSON.
 func (rule Rule) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Id           string
-		Description  string
-		Severity     string
-	} {
-		Id:          rule.id,
-		Description: rule.description,
-		Severity:    rule.severity.name,
-	})
-}
-
-type RuleValidationResult struct {
-	rule          Rule
-	isViolated    bool
-	LocationRange LocationRange
-}
-
-func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Rule          Rule          `json:"Rule"`
-		IsViolated    bool          `json:"IsViolated"`
-		LocationRange LocationRange `json:"LocationRange"`
-	} {
-		Rule:          ruleValidationResult.rule,
-		IsViolated:    ruleValidationResult.isViolated,
-		LocationRange: ruleValidationResult.LocationRange,
-	})
-}
-
-func (ruleValidationResult RuleValidationResult) IsViolated() bool {
-	return ruleValidationResult.isViolated
-}
-
-func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
-	if len(params) == 0 {
-		ruleValidationResult.isViolated = true
-	} else if len(params) == 1 {
-		ruleValidationResult.isViolated = params[0]
-	} else {
-		log.Error("Invalid params to RuleValidationResult::SetViolated")
-	}
-}
-
-func (ruleValidationResult *RuleValidationResult) Location() LocationRange {
-	return ruleValidationResult.LocationRange
-}
-
-func (ruleValidationResult *RuleValidationResult) SetLocation(startLineNUmber, startCharNumber, endLineNumber, endCharNumber int) {
-	ruleValidationResult.LocationRange.start.lineNumber = startLineNUmber
-	ruleValidationResult.LocationRange.start.charNumber = startCharNumber
-	ruleValidationResult.LocationRange.end.lineNumber   = endLineNumber
-	ruleValidationResult.LocationRange.end.charNumber   = endCharNumber
-}
-
-func (ruleValidationResult *RuleValidationResult) SetLocationRangeFrom(locationRange LocationRange) {
-	ruleValidationResult.LocationRange = locationRange
-}
-
-func LocationRangeFromCommand(command instructions.Command) LocationRange {
-	location := LocationRange{
-		start: Location{
-			lineNumber: 0,
-			charNumber: 0,
-		},
-		end:   Location{
-			lineNumber: 0,
-			charNumber: 0,
-		},
-	}
-
-	commandLocation := command.Location()
-	if commandLocation != nil {
-		location.start.lineNumber = commandLocation[0].Start.Line
-		location.start.charNumber = commandLocation[0].Start.Character
-		location.end.lineNumber   = commandLocation[0].End.Line
-		location.end.charNumber   = commandLocation[0].End.Character
-	}
-
-	return location
-}
-
-func (ruleValidationResult *RuleValidationResult) SetRule(rule Rule) {
-	ruleValidationResult.rule = rule
-}
-
-type LocationRange struct {
-	start Location
-	end   Location
-}
-
-type Location struct {
-	lineNumber int
-	charNumber int
-}
-
-func (location *Location) LineNumber() int {
-	return location.lineNumber
-}
-
-func (location *Location) CharNumber() int {
-	return location.charNumber
-}
-
-func (location Location) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		LineNumber int
-		CharNumber int
-	} {
-		LineNumber: location.lineNumber,
-		CharNumber: location.charNumber,
-	})
-}
-
-func (locationRange *LocationRange) Start() Location {
-	return locationRange.start
-}
-
-func (locationRange *LocationRange) End() Location {
-	return locationRange.end
-}
-
-func (locationRange LocationRange) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Start Location
-		End   Location
+		ID          string
+		Description string
+		Severity    string
 	}{
-		Start: locationRange.start,
-		End:   locationRange.end,
+		ID:          rule.id,
+		Description: rule.description,
+		Severity:    rule.severity.String(),
 	})
 }
 
-func Get() []Rule {
-	return all
+// RuleMapType represents a set of rules for each Dockerfile AST element
+// identified by its type's string value (through reflect).
+type RuleMapType map[string][]Rule
+
+// ruleMap stores a ruleset for each Dockerfile AST element that they need to be validated against.
+// It's a map[reflect.TypeOf(Dockerfile AST element).String()][]Rule under the hood.
+var ruleMap RuleMapType = map[string][]Rule{} // nolint:gochecknoglobals
+
+// Count gives back the total number of rules in the ruleset.
+// Note: each AST element has a set of corresponding rules in the rule map.
+func (rm RuleMapType) Count() int {
+	sum := 0
+	for _, astElementRuleList := range rm {
+		sum += len(astElementRuleList)
+	}
+
+	return sum
 }
 
-var all []Rule
+// Get returns ruleset's ruleMap.
+func Get() RuleMapType {
+	return ruleMap
+}
+
+// GetRulesForAstElement returns a Rule slice with all the rules that
+// the given Dockerfile AST element needs to be validated against.
+func GetRulesForAstElement(astElementInterface interface{}) []Rule {
+	return ruleMap[reflect.TypeOf(astElementInterface).String()]
+}
