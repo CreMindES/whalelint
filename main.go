@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"robpike.io/filter"
 
-	Linter  "./linter"
-	RuleSet "./linter/ruleset"
+	Linter  "github.com/cremindes/whalelint/linter"
+	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 )
 
 func main() {

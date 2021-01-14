@@ -16,7 +16,7 @@ func ValidateDl3000(workdirCommand *instructions.WorkdirCommand) RuleValidationR
 		LocationRange: LocationRangeFromCommand(workdirCommand),
 	}
 
-	if filepath.IsAbs(workdirCommand.Path) == false {
+	if !filepath.IsAbs(workdirCommand.Path) {
 		result.SetViolated()
 		result.LocationRange.end.charNumber += len(workdirCommand.String())
 	}
