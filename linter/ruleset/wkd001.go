@@ -7,10 +7,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var _ = NewRule("DL3000", "WORKDIR should be an absolute path for clarity and reliability.", ValWarning,
-	ValidateDl3000)
+var _ = NewRule("WKD001", "WORKDIR should be an absolute path for clarity and reliability.", ValWarning,
+	ValidateWkd001)
 
-func ValidateDl3000(workdirCommand *instructions.WorkdirCommand) RuleValidationResult {
+func ValidateWkd001(workdirCommand *instructions.WorkdirCommand) RuleValidationResult {
 	result := RuleValidationResult{
 		isViolated:    false,
 		LocationRange: LocationRangeFromCommand(workdirCommand),

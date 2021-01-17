@@ -115,6 +115,10 @@ func (rule *Rule) Description() string {
 	return rule.description
 }
 
+func (rule *Rule) ValidationFunc() interface{} {
+	return rule.validationFunc
+}
+
 // MarshalJSON converts a Rule instance to JSON.
 func (rule Rule) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
