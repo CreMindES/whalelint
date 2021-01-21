@@ -140,16 +140,8 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 	// TODO: sudo
 
 	// env vars
-	for i, lexItem := range bashCommandLex {
-		if strings.Contains(lexItem, "=") {
-			keyValue := strings.Split(lexItem, "=")
-			bashCommand.envVars[keyValue[0]] = keyValue[1]
-		} else {
-			// only get the first n key-value pairs, as they are the env vars
-			bashCommandLex = bashCommandLex[i:]
-			break //nolint:nlreturn
-		}
-	}
+	bashCommand.envVars = Utils.ParseKeyValueMap(bashCommandLex, '=', true)
+	bashCommandLex = bashCommandLex[len(bashCommand.envVars):]
 
 	// binary
 	bashCommand.bin, bashCommandLex = bashCommandLex[0], bashCommandLex[1:]
@@ -178,7 +170,7 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 	}
 
 	// args
-	bashCommand.argMap = Utils.ParseKeyValueMap(bashCommandLex, '=')
+	bashCommand.argMap = Utils.ParseKeyValueMap(bashCommandLex, '=', false)
 
 	return bashCommand
 }

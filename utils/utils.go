@@ -10,6 +10,17 @@ import (
 
 /* String helper functions. */
 
+// EqualsEither returns true, if str string is a match to any element of the targetList, false otherwise.
+func EqualsEither(str string, targetList []string) bool {
+	for _, target := range targetList {
+		if str == target {
+			return true
+		}
+	}
+
+	return false
+}
+
 // RemoveExtraSpaces removes all extra consecutive spaces from a string.
 func RemoveExtraSpaces(str string) string {
 	space := regexp.MustCompile(`\s+`)
@@ -96,22 +107,33 @@ func InsertIntoSlice(originalSlice []string, element string, index int) ([]strin
 /* String map functions. */
 
 // ParseKeyValueMap parses a string list into map[string]string based on the separator rune.
-func ParseKeyValueMap(strList []string, separator rune) map[string]string {
-	argMap := make(map[string]string, len(strList))
+// If finishOnMiss is true, the parser terminates on the first element, where there is no separator rune present
+// and returns with the map built so far without the last, unsplittable element.
+func ParseKeyValueMap(strList []string, separator rune, finishOnMiss bool) map[string]string {
+	resultMap := make(map[string]string)
 
 	for _, item := range strList {
-		var key, value string
+		key, value := SplitKeyValue(item, separator)
 
-		equalSignIndex := strings.IndexRune(item, separator)
-		if equalSignIndex == -1 {
-			key = item
-		} else {
-			key = item[0:equalSignIndex]
-			value = item[equalSignIndex+1:]
+		if finishOnMiss && len(value) == 0 {
+			break
 		}
 
-		argMap[key] = value
+		resultMap[key] = value
 	}
 
-	return argMap
+	return resultMap
+}
+
+// SplitKeyValue splits s string into two strings on the r rune.
+// It's ideal for building maps, as there is always two element, a key and a value returned.
+// Naturally, if there is no r rune present in s string, the second element will be an empty string.
+func SplitKeyValue(s string, r rune) (string, string) {
+	idx := strings.IndexRune(s, r)
+
+	if idx == -1 {
+		return s, ""
+	}
+
+	return s[0:idx], s[idx+1:]
 }
