@@ -74,6 +74,19 @@ func (bashCommand *BashCommand) String() string {
 	return bashCommand.rawString
 }
 
+func NewBashCommand(envVarList map[string]string, bin string, subCommand string, optionMap map[string]string,
+	argMap map[string]string, hasSudo bool, rawString string) BashCommand {
+	return BashCommand{
+		envVarList,
+		bin,
+		subCommand,
+		optionMap,
+		argMap,
+		hasSudo,
+		rawString,
+	}
+}
+
 // ParseBashCommandList parses a list of bash commands, either from a raw string or buildkit::*instructions.RunCommand.
 func ParseBashCommandList(command interface{}) []BashCommand {
 	return ParseBashCommandChain(command).BashCommandList
@@ -104,7 +117,7 @@ func ParseBashCommandChain(command interface{}) BashCommandChain {
 
 	lex = convertSemicolonsToLexItems(lex)
 
-	bashCommandChainLex, delimiterLex := splitBashChainLex(lex)
+	bashCommandChainLex, delimiterLex := SplitBashChainLex(lex)
 	bashCommandChain.OperatorList = delimiterLex
 
 	for _, bashCommandLex := range bashCommandChainLex {
@@ -184,7 +197,7 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 
 // splitBashChainLex splits a bash command lex chain on a set of delimiters.
 // It returns the list of bash commands lexes in the chain and the delimiters between them.
-func splitBashChainLex(strList []string) ([][]string, []string) {
+func SplitBashChainLex(strList []string) ([][]string, []string) {
 	var (
 		bashCommandList [][]string
 		delimiterList   []string
