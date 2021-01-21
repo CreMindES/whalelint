@@ -137,14 +137,21 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 		return bashCommand
 	}
 
-	// TODO: sudo
+	bashCommand.rawString = strings.Join(bashCommandLex, " ")
 
 	// env vars
 	bashCommand.envVars = Utils.ParseKeyValueMap(bashCommandLex, '=', true)
 	bashCommandLex = bashCommandLex[len(bashCommand.envVars):]
 
+	// sudo
+	binaryIndex := 0
+	if bashCommandLex[0] == "sudo" {
+		binaryIndex = 1
+		bashCommand.hasSudo = true
+	}
+
 	// binary
-	bashCommand.bin, bashCommandLex = bashCommandLex[0], bashCommandLex[1:]
+	bashCommand.bin, bashCommandLex = bashCommandLex[binaryIndex], bashCommandLex[binaryIndex+1:]
 
 	// optional subcommand
 	for _, subCommand := range subCommandMap[bashCommand.bin] {
