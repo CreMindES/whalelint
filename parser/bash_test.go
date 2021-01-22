@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/shlex"
+	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	"github.com/stretchr/testify/assert"
 
 	Parser "github.com/cremindes/whalelint/parser"
@@ -117,6 +118,102 @@ func TestParseBashCommand(t *testing.T) { // nolint:funlen
 			assert.Equal(t, bashCommand.HasSudo(), testCase.bashCommand.HasSudo())
 			assert.Equal(t, bashCommand.OptionList(), testCase.bashCommand.OptionList())
 			assert.Equal(t, bashCommand.String(), testCase.bashCommand.String())
+		})
+	}
+}
+
+func TestParseBashCommandChain(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
+	testCases := []struct {
+		name             string                  // test name
+		input            interface{}             // input
+		bashCommandChain Parser.BashCommandChain // expected output
+	}{
+		{
+			"Parse basic string into a bash command chain.",
+			"echo 1",
+			Parser.BashCommandChain{
+				BashCommandList: []Parser.BashCommand{Parser.NewBashCommand(
+					map[string]string{},
+					"echo",
+					"",
+					map[string]string{},
+					map[string]string{"1": ""},
+					false,
+					"echo 1",
+				)},
+				OperatorList: nil,
+			},
+		},
+		{
+			"Parse *instrunctions.RunCommand into a bash command chain.",
+			&instructions.RunCommand{
+				ShellDependantCmdLine: instructions.ShellDependantCmdLine{
+					CmdLine:      []string{"echo 1"},
+					PrependShell: true,
+				},
+			},
+			Parser.BashCommandChain{
+				BashCommandList: []Parser.BashCommand{Parser.NewBashCommand(
+					map[string]string{},
+					"echo",
+					"",
+					map[string]string{},
+					map[string]string{"1": ""},
+					false,
+					"echo 1",
+				)},
+				OperatorList: nil,
+			},
+		},
+		{
+			"Parse empty *instrunctions.RunCommand into a bash command chain.",
+			&instructions.RunCommand{
+				ShellDependantCmdLine: instructions.ShellDependantCmdLine{
+					CmdLine:      []string{},
+					PrependShell: true,
+				},
+			},
+			Parser.BashCommandChain{
+				BashCommandList: []Parser.BashCommand{Parser.NewBashCommand(
+					map[string]string{},
+					"",
+					"",
+					map[string]string{},
+					map[string]string{},
+					false,
+					"",
+				)},
+				OperatorList: nil,
+			},
+		},
+		{
+			"Parse empty string array into a bash command chain.",
+			[]string{},
+			Parser.BashCommandChain{
+				BashCommandList: []Parser.BashCommand{Parser.NewBashCommand(
+					map[string]string{},
+					"",
+					"",
+					map[string]string{},
+					map[string]string{},
+					false,
+					"",
+				)},
+				OperatorList: nil,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase
+
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			bashCommandChain := Parser.ParseBashCommandChain(testCase.input)
+			assert.EqualValues(t, bashCommandChain, testCase.bashCommandChain)
 		})
 	}
 }

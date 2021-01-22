@@ -104,17 +104,24 @@ func ParseBashCommandChain(command interface{}) BashCommandChain {
 	case string:
 		lex, err = shlex.Split(c)
 	case *instructions.RunCommand:
-		lex, err = shlex.Split(c.String()[4:])
+		lex, err = shlex.Split(strings.Join(c.ShellDependantCmdLine.CmdLine, ""))
+	case []string:
+		lex, err = shlex.Split(strings.Join(c, " "))
 	}
 
-	if err != nil && len(lex) == 0 {
+	if err != nil || len(lex) == 0 {
 		log.Error("Cannot lex bash command.", err)
 
-		return BashCommandChain{}
+		return BashCommandChain{
+			BashCommandList: []BashCommand{ParseBashCommand([]string{})},
+			OperatorList:    nil,
+		}
 	}
 
 	bashCommandChain := BashCommandChain{}
 
+	// BUG: rethink of semicolon command ending handling strategy, as the current version causes the rawString to be
+	// different than the original.
 	lex = convertSemicolonsToLexItems(lex)
 
 	bashCommandChainLex, delimiterLex := SplitBashChainLex(lex)
@@ -122,10 +129,6 @@ func ParseBashCommandChain(command interface{}) BashCommandChain {
 
 	for _, bashCommandLex := range bashCommandChainLex {
 		bashCommandChain.BashCommandList = append(bashCommandChain.BashCommandList, ParseBashCommand(bashCommandLex))
-	}
-
-	if bashCommandChain.BashCommandList == nil {
-		log.Println("fuck")
 	}
 
 	return bashCommandChain
