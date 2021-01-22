@@ -21,47 +21,27 @@ func EqualsEither(str string, targetList []string) bool {
 	return false
 }
 
-// RemoveExtraSpaces removes all extra consecutive spaces from a string.
-func RemoveExtraSpaces(str string) string {
-	space := regexp.MustCompile(`\s+`)
-
-	return space.ReplaceAllString(str, " ")
+// SplitMulti splits str string on any pattern match from patternSlice.
+// Note: not-implemented!
+func SplitMulti(str string, patternSlice []string) []string {
+	return []string{}
 }
 
-// SplitMulti splits a string on any delimiter string found in the delimiterList.
-func SplitMulti(str string, delimiterList []string) []string {
-	indiceList := FindIndexOfSubString(str, delimiterList)
-	if len(indiceList) == 0 {
-		return []string{str}
-	}
+// RemoveExtraSpaces removes all extra consecutive spaces from a string.
+func RemoveExtraSpaces(str string, trim bool) string {
+	space := regexp.MustCompile(`\s+`)
 
-	result := make([]string, len(indiceList))
-
-	prev := 0
-
-	for i, indice := range indiceList {
-		result[i] = str[prev:indice]
-		prev = i + 1
+	result := space.ReplaceAllString(str, " ")
+	if trim {
+		result = strings.Trim(result, " ")
 	}
 
 	return result
 }
 
-// FindIndexOfSubString finds the index of any of the patterns in patternList inside the str string.
-func FindIndexOfSubString(str string, patternList []string) []int {
-	var indexList []int
-
-	for _, pattern := range patternList {
-		if idx := strings.Index(str, pattern); idx != -1 {
-			indexList = append(indexList, idx)
-		}
-	}
-
-	return indexList
-}
-
-// FindIndexOfSliceElement returns the index of the slice element that matched with the pattern.
-// Pattern can be a string or a string slice. In the latter case the first matched index will be returned.
+// FindIndexOfSliceElement returns the fist index of the slice element that matched with the pattern.
+// Pattern can be a string or a string slice. In the latter case the index of the match of the first element with any
+// matching pattern will be returned.
 func FindIndexOfSliceElement(arr []string, patternInterface interface{}) int {
 	switch pattern := patternInterface.(type) {
 	case string:
