@@ -74,6 +74,19 @@ func (bashCommand *BashCommand) String() string {
 	return bashCommand.rawString
 }
 
+func NewBashCommand(envVarList map[string]string, bin string, subCommand string, optionMap map[string]string,
+	argMap map[string]string, hasSudo bool, rawString string) BashCommand {
+	return BashCommand{
+		envVarList,
+		bin,
+		subCommand,
+		optionMap,
+		argMap,
+		hasSudo,
+		rawString,
+	}
+}
+
 // ParseBashCommandList parses a list of bash commands, either from a raw string or buildkit::*instructions.RunCommand.
 func ParseBashCommandList(command interface{}) []BashCommand {
 	return ParseBashCommandChain(command).BashCommandList
@@ -91,28 +104,31 @@ func ParseBashCommandChain(command interface{}) BashCommandChain {
 	case string:
 		lex, err = shlex.Split(c)
 	case *instructions.RunCommand:
-		lex, err = shlex.Split(c.String()[4:])
+		lex, err = shlex.Split(strings.Join(c.ShellDependantCmdLine.CmdLine, ""))
+	case []string:
+		lex, err = shlex.Split(strings.Join(c, " "))
 	}
 
-	if err != nil && len(lex) == 0 {
+	if err != nil || len(lex) == 0 {
 		log.Error("Cannot lex bash command.", err)
 
-		return BashCommandChain{}
+		return BashCommandChain{
+			BashCommandList: []BashCommand{ParseBashCommand([]string{})},
+			OperatorList:    nil,
+		}
 	}
 
 	bashCommandChain := BashCommandChain{}
 
+	// BUG: rethink of semicolon command ending handling strategy, as the current version causes the rawString to be
+	// different than the original.
 	lex = convertSemicolonsToLexItems(lex)
 
-	bashCommandChainLex, delimiterLex := splitBashChainLex(lex)
+	bashCommandChainLex, delimiterLex := SplitBashChainLex(lex)
 	bashCommandChain.OperatorList = delimiterLex
 
 	for _, bashCommandLex := range bashCommandChainLex {
 		bashCommandChain.BashCommandList = append(bashCommandChain.BashCommandList, ParseBashCommand(bashCommandLex))
-	}
-
-	if bashCommandChain.BashCommandList == nil {
-		log.Println("fuck")
 	}
 
 	return bashCommandChain
@@ -184,7 +200,7 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 
 // splitBashChainLex splits a bash command lex chain on a set of delimiters.
 // It returns the list of bash commands lexes in the chain and the delimiters between them.
-func splitBashChainLex(strList []string) ([][]string, []string) {
+func SplitBashChainLex(strList []string) ([][]string, []string) {
 	var (
 		bashCommandList [][]string
 		delimiterList   []string
