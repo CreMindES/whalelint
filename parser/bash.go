@@ -5,6 +5,7 @@ package parser
 import (
 	"strings"
 
+	"github.com/docker/docker/api/types/strslice"
 	"github.com/google/shlex"
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	log "github.com/sirupsen/logrus"
@@ -107,6 +108,10 @@ func ParseBashCommandChain(command interface{}) BashCommandChain {
 		lex, err = shlex.Split(strings.Join(c.ShellDependantCmdLine.CmdLine, ""))
 	case []string:
 		lex, err = shlex.Split(strings.Join(c, " "))
+	case strslice.StrSlice:
+		lex, err = shlex.Split(strings.Join(c, " "))
+	default:
+		err = Utils.ErrUnSupportedType
 	}
 
 	if err != nil || len(lex) == 0 {
