@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+/* Errors */
+var ErrUnSupportedType = errors.New("unsupported type")
+
 /* String helper functions. */
 
 // EqualsEither returns true, if str string is a match to any element of the targetList, false otherwise.
