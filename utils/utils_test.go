@@ -424,6 +424,35 @@ func TestParseKeyValueMap(t *testing.T) {
 	}
 }
 
+func TestIsUnixPortValid(t *testing.T) {
+	t.Parallel()
+
+	// nolint:gofmt,gofumpt,goimports
+	testCases := []struct {
+		name    string
+		inPort  interface{}
+		isValid bool
+	}{
+		{inPort:  "4242", isValid:  true, name: "Port  4242 as string"},
+		{inPort:    4242, isValid:  true, name: "Port  4242 as int"   },
+		{inPort: "67000", isValid: false, name: "Port 67000 as string"},
+		{inPort:   67000, isValid: false, name: "Port 67000 as int"   },
+		{inPort: "a6700", isValid: false, name: "Port a6700 as string"},
+		{inPort: " 6700", isValid:  true, name: "Port \" 6700\" as string"},
+		{inPort:    true, isValid: false, name: "Port  true as bool"  },
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase
+
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.EqualValues(t, testCase.isValid, Utils.IsUnixPortValid(testCase.inPort))
+		})
+	}
+}
+
 func TestMatchDockerImageNames(t *testing.T) {
 	t.Parallel()
 

@@ -5,7 +5,10 @@ package utils
 import (
 	"errors"
 	"regexp"
+	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /* Errors. */
@@ -120,6 +123,41 @@ func SplitKeyValue(s string, r rune) (string, string) {
 	}
 
 	return s[0:idx], s[idx+1:]
+}
+
+/* Unix stuff. */
+
+func IsUnixPortValid(portParam interface{}) bool {
+	portMin := 0
+	portMax := 65535
+
+	var (
+		err  error
+		port int
+	)
+
+	switch portAssert := portParam.(type) {
+	case int:
+		port = portAssert
+	case string:
+		// convert our port string to integer
+		portAssert = strings.TrimSpace(portAssert)
+		port, err = strconv.Atoi(portAssert)
+
+		if err != nil {
+			log.Debug("Cannot convert port string to int!")
+			return false // nolint:nlreturn
+		}
+	default:
+		log.Error("Unsupported portParam type.")
+		return false // nolint:nlreturn
+	}
+
+	if (portMin <= port) && (port <= portMax) {
+		return true
+	}
+
+	return false
 }
 
 /* Docker related functions. */
