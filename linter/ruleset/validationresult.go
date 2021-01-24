@@ -34,6 +34,7 @@ func (ruleValidationResult RuleValidationResult) IsViolated() bool {
 }
 
 func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
+	// nolint:gomnd
 	switch len(params) {
 	case 0:
 		ruleValidationResult.isViolated = true
@@ -43,7 +44,7 @@ func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
 			ruleValidationResult.isViolated = params[0]
 		}
 	case 2:
-		if params[1] == FORCE && ruleValidationResult.isViolated {
+		if params[1] == FORCE && ruleValidationResult.isViolated { // nolint:gosimple
 			ruleValidationResult.isViolated = params[0]
 		}
 	default:
