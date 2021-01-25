@@ -27,9 +27,9 @@ func TestValidateCpy001(t *testing.T) {
 		copyNode    mockCopyNode
 	}{
 		{isViolation: false, name: "Proper COPY command with 1 --chmod flag.", copyNode: mockCopyNode{
-			original: "COPY --chmod=7780 src src dst/",
+			original: "COPY --chmod=7780 src src2 dst/",
 			flags: []string{"--chmod=7780"},
-			next: []string{"src", "src", "dst/"},
+			next: []string{"src", "src2", "dst/"},
 		}},
 		{isViolation: true, name: "COPY command with 1 -chmod flag.", copyNode: mockCopyNode{
 			original: "COPY -chmod=7780 src dst/",
@@ -73,21 +73,15 @@ func TestValidateCpy001(t *testing.T) {
 			// nolint:exhaustivestruct
 			node := &parser.Node{
 				Value: "copy",
-				Next: &parser.Node{
-					Value: testCase.copyNode.next[0],
-					Next: &parser.Node{
-						Value: testCase.copyNode.next[1],
-					},
-				},
 				Original: testCase.copyNode.original,
 				Flags:    testCase.copyNode.flags,
 			}
 
-			pointer := node.Next
+			// fill out Next values down the tree
+			nextPointer := &node.Next
 			for _, next := range testCase.copyNode.next {
-				nodePtr := &parser.Node{Value: next} // nolint:exhaustivestruct
-				pointer = nodePtr
-				pointer = (*pointer).Next
+				*nextPointer = &parser.Node{Value: next} // nolint:exhaustivestruct
+				nextPointer = &(*nextPointer).Next
 			}
 
 			instruction, err := instructions.ParseInstruction(node)
