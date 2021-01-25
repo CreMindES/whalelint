@@ -13,6 +13,8 @@ type RuleValidationResult struct {
 	LocationRange LocationRange
 }
 
+const FORCE = true // used for overriding the latched isViolated flag in SetViolated.
+
 func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Rule          Rule          `json:"Rule"`
@@ -32,11 +34,19 @@ func (ruleValidationResult RuleValidationResult) IsViolated() bool {
 }
 
 func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
+	// nolint:gomnd
 	switch len(params) {
 	case 0:
 		ruleValidationResult.isViolated = true
 	case 1:
-		ruleValidationResult.isViolated = params[0]
+		// isViolated is latched, i.e once set, it cannot be unset, unless passed a second param: FORCE
+		if !ruleValidationResult.isViolated {
+			ruleValidationResult.isViolated = params[0]
+		}
+	case 2:
+		if params[1] == FORCE && ruleValidationResult.isViolated { // nolint:gosimple
+			ruleValidationResult.isViolated = params[0]
+		}
 	default:
 		log.Error("Invalid params to RuleValidationResult::SetViolated")
 	}
