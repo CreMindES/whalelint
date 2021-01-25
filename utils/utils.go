@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-/* Errors */
+/* Errors. */
+
 var ErrUnSupportedType = errors.New("unsupported type")
 
 /* String helper functions. */
@@ -119,4 +120,12 @@ func SplitKeyValue(s string, r rune) (string, string) {
 	}
 
 	return s[0:idx], s[idx+1:]
+}
+
+/* Docker related functions. */
+
+// MatchDockerImageNames compares Docker image name strings with the addition of including the fact, that when no tag
+// is specified, ":latest" is assumed.
+func MatchDockerImageNames(str1, str2 string) bool {
+	return strings.TrimSuffix(str1, ":latest") == strings.TrimSuffix(str2, ":latest")
 }
