@@ -72,7 +72,7 @@ func TestValidateCpy001(t *testing.T) {
 
 			// nolint:exhaustivestruct
 			node := &parser.Node{
-				Value: "copy",
+				Value:    "copy",
 				Original: testCase.copyNode.original,
 				Flags:    testCase.copyNode.flags,
 			}

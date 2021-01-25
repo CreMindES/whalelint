@@ -423,3 +423,35 @@ func TestParseKeyValueMap(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchDockerImageNames(t *testing.T) {
+	t.Parallel()
+
+	// nolint:gofmt,gofumpt,goimports
+	testCases := []struct {
+		str1  string
+		str2  string
+		match bool
+		name  string
+	}{
+		{str1: "golang",        str2: "golang",        match:  true, name: "golang == golang"              },
+		{str1: "golang:latest", str2: "golang:latest", match:  true, name: "golang:latest == golang:latest"},
+		{str1: "golang:latest", str2: "golang",        match:  true, name: "golang:latest == golang"       },
+		{str1: "golang",        str2: "golang:latest", match:  true, name: "golang == golang:latest"       },
+		{str1: "golang",        str2: "python:latest", match: false, name: "golang == python:latest"       },
+		{str1: "golang:1.16",   str2: "golang:latest", match: false, name: "golang:1.16 == golang:latest"  },
+		{str1: "golang:1.16",   str2: "golang:latest", match: false, name: "golang:1.16 == golang:latest"  },
+		{str1: "golang:1.16",   str2: "golang:1.15.1", match: false, name: "golang:1.16 == golang:1.15.1"  },
+		{str1: "python:1.16",   str2: "golang:1.16",   match: false, name: "python:1.16 == golang:1.16"    },
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase
+
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.EqualValues(t, testCase.match, Utils.MatchDockerImageNames(testCase.str1, testCase.str2))
+		})
+	}
+}
