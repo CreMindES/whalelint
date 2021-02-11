@@ -4,10 +4,15 @@ package ruleset
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
+	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
+
+var ruleMapWriteLock = sync.RWMutex{} // nolint:gochecknoglobals
 
 // Severity type represents a severity, with an int level and a String function.
 type Severity int
@@ -17,9 +22,11 @@ const (
 	ValDeprecation
 	ValInfo
 	ValWarning
+	ValUnknown
 )
 
 // Severity.String() converts the raw Severity into a string.
+// Chose not to use "go:generate stringer -type=Severity" due this being much more readable.
 func (severity Severity) String() string {
 	switch severity {
 	case ValDeprecation:
@@ -30,9 +37,42 @@ func (severity Severity) String() string {
 		return "Info"
 	case ValWarning:
 		return "Warning"
+	case ValUnknown:
+		return "Unknown"
 	default:
 		return "Unknown"
 	}
+}
+
+func (severity Severity) MarshalJSON() ([]byte, error) {
+	return json.Marshal(severity.String())
+}
+
+func (severity *Severity) UnmarshalJSON(data []byte) error {
+	switch strings.Trim(string(data), "\"") {
+	case "Deprecation":
+		*severity = ValDeprecation
+	case "Error":
+		*severity = ValError
+	case "Info":
+		*severity = ValInfo
+	case "Warning":
+		*severity = ValWarning
+	case "Unknown":
+		*severity = ValUnknown
+	default:
+		err := &json.UnmarshalTypeError{
+			Value:  string(data),
+			Type:   reflect.TypeOf(data),
+			Offset: 0,
+			Struct: "",
+			Field:  "",
+		}
+
+		return fmt.Errorf("failed to unmarshal Severity: %w", err)
+	}
+
+	return nil
 }
 
 // DocsReference returns an official reference link connected to the rule itself, most likely directly linking to a
@@ -62,7 +102,7 @@ type Rule struct {
 //
 // example: func(runCommand *instructions.RunCommand) RuleValidationResult where runCommand is
 // asserted param as *instructions.RunCommand.
-func (rule Rule) Validate(param interface{}) RuleValidationResult {
+func (rule *Rule) Validate(param interface{}) RuleValidationResult {
 	// Assemble validationFunc reflect type, based on param type, as they are always
 	// func(param *paramActualType) RuleValidationResult
 	paramType := reflect.TypeOf(param)
@@ -103,11 +143,14 @@ func NewRule(id string, definition string, description string, severity Severity
 
 	targetBin := reflect.TypeOf(param).In(0).String()
 
+	// Tests are running in parallel and as such they can potentially cause a race condition
+	ruleMapWriteLock.RLock()
 	if val, ok := ruleMap[targetBin]; ok {
 		ruleMap[targetBin] = append(val, rule)
 	} else {
 		ruleMap[targetBin] = []Rule{rule}
 	}
+	ruleMapWriteLock.RUnlock()
 
 	return &rule
 }
@@ -137,18 +180,39 @@ func (rule *Rule) ValidationFunc() interface{} {
 }
 
 // MarshalJSON converts a Rule instance to JSON.
-func (rule Rule) MarshalJSON() ([]byte, error) {
+func (rule *Rule) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		ID          string
 		Definition  string
 		Description string
-		Severity    string
+		Severity    Severity
 	}{
 		ID:          rule.id,
 		Definition:  rule.definition,
 		Description: rule.description,
-		Severity:    rule.severity.String(),
+		Severity:    rule.severity,
 	})
+}
+
+func (rule *Rule) UnmarshalJSON(data []byte) error {
+	r := struct {
+		ID          string
+		Definition  string
+		Description string
+		Severity    Severity
+	}{}
+
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal Rule: %w", err)
+	}
+
+	rule.id = r.ID
+	rule.definition = r.Definition
+	rule.description = r.Description
+	rule.severity = r.Severity
+
+	return nil
 }
 
 // RuleMapType represents a set of rules for each Dockerfile AST element
@@ -161,9 +225,9 @@ var ruleMap RuleMapType = map[string][]Rule{} // nolint:gochecknoglobals
 
 // Count gives back the total number of rules in the ruleset.
 // Note: each AST element has a set of corresponding rules in the rule map.
-func (rm RuleMapType) Count() int {
+func (ruleMap RuleMapType) Count() int {
 	sum := 0
-	for _, astElementRuleList := range rm {
+	for _, astElementRuleList := range ruleMap {
 		sum += len(astElementRuleList)
 	}
 

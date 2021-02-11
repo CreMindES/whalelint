@@ -2,22 +2,33 @@ package ruleset
 
 import (
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
 
+const FORCE = true // used for overriding the latched isViolated flag in SetViolated.
+
 type RuleValidationResult struct {
-	rule          Rule
+	rule          *Rule
 	isViolated    bool
 	message       string
 	LocationRange LocationRange
 }
 
-const FORCE = true // used for overriding the latched isViolated flag in SetViolated.
+func NewRuleValidationResult(rule *Rule, isViolated bool, message string,
+	locationRange LocationRange) *RuleValidationResult {
+	return &RuleValidationResult{
+		rule:          rule,
+		isViolated:    isViolated,
+		message:       message,
+		LocationRange: locationRange,
+	}
+}
 
 func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Rule          Rule          `json:"Rule"`
+		Rule          *Rule         `json:"Rule"`
 		IsViolated    bool          `json:"IsViolated"`
 		Message       string        `json:"Message"`
 		LocationRange LocationRange `json:"LocationRange"`
@@ -27,6 +38,27 @@ func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) 
 		Message:       ruleValidationResult.message,
 		LocationRange: ruleValidationResult.LocationRange,
 	})
+}
+
+func (ruleValidationResult *RuleValidationResult) UnmarshalJSON(data []byte) error {
+	rvr := struct {
+		Rule          *Rule
+		IsViolated    bool
+		Message       string
+		LocationRange LocationRange
+	}{}
+
+	err := json.Unmarshal(data, &rvr)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal RuleValidationResult: %w", err)
+	}
+
+	ruleValidationResult.rule = rvr.Rule
+	ruleValidationResult.isViolated = rvr.IsViolated
+	ruleValidationResult.message = rvr.Message
+	ruleValidationResult.LocationRange = rvr.LocationRange
+
+	return nil
 }
 
 func (ruleValidationResult RuleValidationResult) IsViolated() bool {
@@ -44,7 +76,7 @@ func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
 			ruleValidationResult.isViolated = params[0]
 		}
 	case 2:
-		if params[1] == FORCE && ruleValidationResult.isViolated { // nolint:gosimple
+		if params[1] == FORCE { // nolint:gosimple
 			ruleValidationResult.isViolated = params[0]
 		}
 	default:
@@ -52,8 +84,8 @@ func (ruleValidationResult *RuleValidationResult) SetViolated(params ...bool) {
 	}
 }
 
-func (ruleValidationResult *RuleValidationResult) Location() LocationRange {
-	return ruleValidationResult.LocationRange
+func (ruleValidationResult *RuleValidationResult) Location() *LocationRange {
+	return &ruleValidationResult.LocationRange
 }
 
 func (ruleValidationResult *RuleValidationResult) SetLocation(startLineNumber, startCharNumber,
@@ -68,6 +100,26 @@ func (ruleValidationResult *RuleValidationResult) SetLocationRangeFrom(locationR
 	ruleValidationResult.LocationRange = locationRange
 }
 
-func (ruleValidationResult *RuleValidationResult) SetRule(rule Rule) {
+func (ruleValidationResult *RuleValidationResult) SetRule(rule *Rule) {
 	ruleValidationResult.rule = rule
+}
+
+func (ruleValidationResult *RuleValidationResult) Severity() Severity {
+	return ruleValidationResult.rule.Severity()
+}
+
+func (ruleValidationResult *RuleValidationResult) RuleID() string {
+	return ruleValidationResult.rule.ID()
+}
+
+func (ruleValidationResult *RuleValidationResult) Message() string {
+	if len(ruleValidationResult.message) == 0 {
+		return ruleValidationResult.rule.Description()
+	}
+
+	return ruleValidationResult.message
+}
+
+func (ruleValidationResult *RuleValidationResult) Description() string {
+	return ruleValidationResult.rule.Description()
 }

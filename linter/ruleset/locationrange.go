@@ -2,14 +2,15 @@ package ruleset
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 )
 
 type LocationRange struct {
-	start Location
-	end   Location
+	start *Location
+	end   *Location
 }
 
 type Location struct {
@@ -35,11 +36,28 @@ func (location Location) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (locationRange *LocationRange) Start() Location {
+func (location *Location) UnmarshalJSON(data []byte) error {
+	loc := struct {
+		LineNumber int
+		CharNumber int
+	}{}
+
+	err := json.Unmarshal(data, &loc)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal Location: %w", err)
+	}
+
+	location.lineNumber = loc.LineNumber
+	location.charNumber = loc.CharNumber
+
+	return nil
+}
+
+func (locationRange *LocationRange) Start() *Location {
 	return locationRange.start
 }
 
-func (locationRange *LocationRange) End() Location {
+func (locationRange *LocationRange) End() *Location {
 	return locationRange.end
 }
 
@@ -48,9 +66,26 @@ func (locationRange LocationRange) MarshalJSON() ([]byte, error) {
 		Start Location
 		End   Location
 	}{
-		Start: locationRange.start,
-		End:   locationRange.end,
+		Start: *locationRange.start,
+		End:   *locationRange.end,
 	})
+}
+
+func (locationRange *LocationRange) UnmarshalJSON(data []byte) error {
+	lr := struct {
+		Start Location
+		End   Location
+	}{}
+
+	err := json.Unmarshal(data, &lr)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal LocationRange: %w", err)
+	}
+
+	locationRange.start = &lr.Start
+	locationRange.end   = &lr.End // nolint:gofmt,gofumpt
+
+	return nil
 }
 
 func LocationRangeFromCommand(command instructions.Command) LocationRange {
@@ -60,11 +95,11 @@ func LocationRangeFromCommand(command instructions.Command) LocationRange {
 func CopyLocationRange(parserRange []parser.Range) LocationRange {
 	if parserRange == nil {
 		return LocationRange{
-			start: Location{
+			start: &Location{
 				lineNumber: 1,
 				charNumber: 0,
 			},
-			end: Location{
+			end: &Location{
 				lineNumber: 1,
 				charNumber: 0,
 			},
@@ -72,15 +107,28 @@ func CopyLocationRange(parserRange []parser.Range) LocationRange {
 	}
 
 	location := LocationRange{
-		start: Location{
+		start: &Location{
 			lineNumber: parserRange[0].Start.Line,
 			charNumber: parserRange[0].Start.Character,
 		},
-		end: Location{
+		end: &Location{
 			lineNumber: parserRange[len(parserRange)-1].End.Line,
 			charNumber: parserRange[len(parserRange)-1].End.Character,
 		},
 	}
 
 	return location
+}
+
+func NewLocationRange(startLine, startChar, endLine, endChar int) LocationRange {
+	return LocationRange{
+		start: &Location{
+			lineNumber: startLine,
+			charNumber: startChar,
+		},
+		end: &Location{
+			lineNumber: endLine,
+			charNumber: endChar,
+		},
+	}
 }
