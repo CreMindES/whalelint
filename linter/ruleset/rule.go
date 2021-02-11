@@ -17,9 +17,11 @@ const (
 	ValDeprecation
 	ValInfo
 	ValWarning
+	ValUnknown
 )
 
 // Severity.String() converts the raw Severity into a string.
+// Chose not to use "go:generate stringer -type=Severity" due this being much more readable.
 func (severity Severity) String() string {
 	switch severity {
 	case ValDeprecation:
@@ -30,6 +32,8 @@ func (severity Severity) String() string {
 		return "Info"
 	case ValWarning:
 		return "Warning"
+	case ValUnknown:
+		return "Unknown"
 	default:
 		return "Unknown"
 	}
@@ -142,12 +146,12 @@ func (rule Rule) MarshalJSON() ([]byte, error) {
 		ID          string
 		Definition  string
 		Description string
-		Severity    string
+		Severity    Severity
 	}{
 		ID:          rule.id,
 		Definition:  rule.definition,
 		Description: rule.description,
-		Severity:    rule.severity.String(),
+		Severity:    rule.severity,
 	})
 }
 
