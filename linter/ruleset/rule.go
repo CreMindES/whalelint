@@ -102,7 +102,7 @@ type Rule struct {
 //
 // example: func(runCommand *instructions.RunCommand) RuleValidationResult where runCommand is
 // asserted param as *instructions.RunCommand.
-func (rule Rule) Validate(param interface{}) RuleValidationResult {
+func (rule *Rule) Validate(param interface{}) RuleValidationResult {
 	// Assemble validationFunc reflect type, based on param type, as they are always
 	// func(param *paramActualType) RuleValidationResult
 	paramType := reflect.TypeOf(param)
@@ -180,7 +180,7 @@ func (rule *Rule) ValidationFunc() interface{} {
 }
 
 // MarshalJSON converts a Rule instance to JSON.
-func (rule Rule) MarshalJSON() ([]byte, error) {
+func (rule *Rule) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		ID          string
 		Definition  string

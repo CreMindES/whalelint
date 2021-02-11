@@ -7,7 +7,7 @@ import (
 )
 
 type RuleValidationResult struct {
-	rule          Rule
+	rule          *Rule
 	isViolated    bool
 	message       string
 	LocationRange LocationRange
@@ -17,7 +17,7 @@ const FORCE = true // used for overriding the latched isViolated flag in SetViol
 
 func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Rule          Rule          `json:"Rule"`
+		Rule          *Rule         `json:"Rule"`
 		IsViolated    bool          `json:"IsViolated"`
 		Message       string        `json:"Message"`
 		LocationRange LocationRange `json:"LocationRange"`
@@ -68,6 +68,6 @@ func (ruleValidationResult *RuleValidationResult) SetLocationRangeFrom(locationR
 	ruleValidationResult.LocationRange = locationRange
 }
 
-func (ruleValidationResult *RuleValidationResult) SetRule(rule Rule) {
+func (ruleValidationResult *RuleValidationResult) SetRule(rule *Rule) {
 	ruleValidationResult.rule = rule
 }
