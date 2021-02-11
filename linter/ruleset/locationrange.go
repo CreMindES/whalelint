@@ -84,3 +84,16 @@ func CopyLocationRange(parserRange []parser.Range) LocationRange {
 
 	return location
 }
+
+func NewLocationRange(startLine, startChar, endLine, endChar int) LocationRange {
+	return LocationRange{
+		start: Location{
+			lineNumber: startLine,
+			charNumber: startChar,
+		},
+		end: Location{
+			lineNumber: endLine,
+			charNumber: endChar,
+		},
+	}
+}
