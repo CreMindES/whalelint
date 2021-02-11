@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
+
+var ruleMapWriteLock = sync.RWMutex{} // nolint:gochecknoglobals
 
 // Severity type represents a severity, with an int level and a String function.
 type Severity int
@@ -140,11 +143,14 @@ func NewRule(id string, definition string, description string, severity Severity
 
 	targetBin := reflect.TypeOf(param).In(0).String()
 
+	// Tests are running in parallel and as such they can potentially cause a race condition
+	ruleMapWriteLock.RLock()
 	if val, ok := ruleMap[targetBin]; ok {
 		ruleMap[targetBin] = append(val, rule)
 	} else {
 		ruleMap[targetBin] = []Rule{rule}
 	}
+	ruleMapWriteLock.RUnlock()
 
 	return &rule
 }
