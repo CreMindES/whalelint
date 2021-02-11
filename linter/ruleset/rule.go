@@ -225,9 +225,9 @@ var ruleMap RuleMapType = map[string][]Rule{} // nolint:gochecknoglobals
 
 // Count gives back the total number of rules in the ruleset.
 // Note: each AST element has a set of corresponding rules in the rule map.
-func (rm RuleMapType) Count() int {
+func (ruleMap RuleMapType) Count() int {
 	sum := 0
-	for _, astElementRuleList := range rm {
+	for _, astElementRuleList := range ruleMap {
 		sum += len(astElementRuleList)
 	}
 
