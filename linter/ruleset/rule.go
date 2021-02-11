@@ -172,3 +172,24 @@ func Get() RuleMapType {
 func GetRulesForAstElement(astElementInterface interface{}) []Rule {
 	return ruleMap[reflect.TypeOf(astElementInterface).String()]
 }
+
+// GetRuleByName searches for the rule by its ExampleName in the main rule map.
+func (ruleMap RuleMapType) GetRuleByName(ruleName string, astElement interface{}) Rule {
+	if astElement != nil {
+		for _, rule := range GetRulesForAstElement(astElement) {
+			if rule.ID() == ruleName {
+				return rule
+			}
+		}
+	} else {
+		for _, astRuleList := range ruleMap {
+			for _, rule := range astRuleList {
+				if rule.ID() == ruleName {
+					return rule
+				}
+			}
+		}
+	}
+
+	return Rule{}
+}
