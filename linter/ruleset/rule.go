@@ -47,11 +47,11 @@ func (rule *Rule) DocsReference() DocsReference {
 }
 
 // Rule represents a Dockerfile lint validation rule.
-// It has the basic id, description, severity attributes and a validation function as an
-// empty interface. For further details on validateFunc, please see Validate how it is
-// utilized.
+// It has the basic id, definition, description, severity attributes and a validation function as an interface.
+// For further details on validateFunc, please see Validate how it is utilized.
 type Rule struct {
 	id             string
+	definition     string
 	description    string
 	severity       Severity
 	validationFunc interface{}
@@ -88,13 +88,14 @@ func (rule Rule) Validate(param interface{}) RuleValidationResult {
 	return result
 }
 
-// NewRule creates a new Rule by joining it's id, description, severity and validation function.
+// NewRule creates a new Rule by joining it's id, definition, description, severity and validation function.
 // It automatically gets assigned into a slice/set of rules corresponding to a specific
 // Dockerfile AST element, inside the ruleMap's corresponding bin, based on the Dockerfile AST
 // element's type. See below, how reflect.TypeOf().String() is used to achieve this.
-func NewRule(id string, description string, severity Severity, param interface{}) interface{} {
+func NewRule(id string, definition string, description string, severity Severity, param interface{}) *Rule {
 	rule := Rule{
 		id:             id,
+		definition:     definition,
 		description:    description,
 		severity:       severity,
 		validationFunc: param,
@@ -121,9 +122,14 @@ func (rule *Rule) Severity() Severity {
 	return rule.severity
 }
 
-// Description returns the rule's description, i.e. the rule itself as a statement/guidance.
+// Description returns the rule's description, the idea behind the definition.
 func (rule *Rule) Description() string {
 	return rule.description
+}
+
+// Definition returns the rule's definition, i.e. the rule itself as a statement/guidance.
+func (rule *Rule) Definition() string {
+	return rule.definition
 }
 
 func (rule *Rule) ValidationFunc() interface{} {
@@ -134,10 +140,12 @@ func (rule *Rule) ValidationFunc() interface{} {
 func (rule Rule) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		ID          string
+		Definition  string
 		Description string
 		Severity    string
 	}{
 		ID:          rule.id,
+		Definition:  rule.definition,
 		Description: rule.description,
 		Severity:    rule.severity.String(),
 	})
