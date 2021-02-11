@@ -23,41 +23,72 @@ func TestValidateCpy006(t *testing.T) {
 		DocsContext string
 	}{
 		{
-			IsViolation: false, ExampleName: "Stage name=foo, copy --from=bar.",
+			IsViolation: false, ExampleName: "1st stage name is `foo`, copy from `bar`.",
 			StageName: "foo", CopyFrom: "bar",
+			DocsContext: `FROM golang:1.15 as {{ .CopyFrom }}
+                          RUN go build app
+                          FROM ubuntu:20.14 as {{ .StageName }}
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation:  true, ExampleName: "2nd stage name is `foo`, copy from `foo`.",
+			StageName: "foo", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15 as bar
+                          RUN go build app
+                          FROM ubuntu:20.14 as {{ .StageName }}
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: false, ExampleName: "No stage name, but copy from `bar`",
+			StageName: "", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: false, ExampleName: "1st stage name is `fooBar`, copy from `foo`.",
+			StageName: "fooBar", CopyFrom: "foo",
 			DocsContext: `FROM golang:1.15 as {{ .StageName }}
                           RUN go build app
                           FROM ubuntu:20.14
                           COPY --from {{ .CopyFrom }}`,
 		},
 		{
-			IsViolation:  true, ExampleName: "Stage name=foo, copy --from=foo.",
-			StageName: "foo", CopyFrom: "foo",
-		},
-		{
-			IsViolation: false, ExampleName: "Stage name=\"\", copy --from=bar.",
-			StageName: "", CopyFrom: "foo",
-		},
-		{
-			IsViolation: false, ExampleName: "Stage name=fooBar, copy --from=foo.",
-			StageName: "fooBar", CopyFrom: "foo",
-		},
-		{
-			IsViolation: false, ExampleName: "Stage name=foo, copy --from=fooBar.",
+			IsViolation: false, ExampleName: "1st stage name is `foo`, copy from `fooBar`.",
 			StageName: "foo", CopyFrom: "fooBar",
-		},
-		{
-			IsViolation: false, ExampleName: "Stage name=foo, copy --from=foo:1.2.",
-			StageName: "foo", CopyFrom: "foo:1.2",
-		},
-		{
-			IsViolation: true, ExampleName: "Stage name=foo, copy --from=foo:latest.",
-			StageName: "builder", StageBase: "foo", CopyFrom: "foo:latest",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
 
 		},
 		{
-			IsViolation: true, ExampleName: "Stage name=foo, copy --from=foo:latest.",
+			IsViolation: false, ExampleName: "1st stage name is foo, copy from `foo:1.2`.",
+			StageName: "foo", CopyFrom: "foo:1.2",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: true,
+			ExampleName: "1st stage alias is `builder` and 2nd base image is `foo`, copy from `foo:latest`.",
+			StageName: "builder", StageBase: "foo", CopyFrom: "foo:latest",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM {{ .StageBase }}
+                          COPY --from {{ .CopyFrom }}`,
+
+		},
+		{
+			IsViolation: true,
+			ExampleName: "1st stage alias is `builder` and 2nd base image is `foo:latest`, copy from `foo`.",
 			StageName: "builder", StageBase: "foo:latest", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM {{ .StageBase }}
+                          COPY --from {{ .CopyFrom }}`,
 		},
 	}
 

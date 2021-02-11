@@ -138,7 +138,7 @@ func GenerateRuleDocs() {
 	)
 
 	for ruleID, ruleDoc := range ruleDocMap {
-		if ruleID == "STL001" || ruleID == "CPY001" {
+		if ruleID == "STL001" || ruleID == "CPY001" || ruleID == "CPY006" {
 			f, err := os.Create(folder + strings.ToLower(ruleID) + ".md")
 			if err != nil {
 				return
