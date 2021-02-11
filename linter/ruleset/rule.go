@@ -35,6 +35,17 @@ func (severity Severity) String() string {
 	}
 }
 
+// DocsReference returns an official reference link connected to the rule itself, most likely directly linking to a
+// Docker documentation webpage.
+func (rule *Rule) DocsReference() DocsReference {
+	docsReference, ok := docsReferenceMap[rule.id[:3]]
+	if !ok {
+		return ToDoReference
+	}
+
+	return docsReference
+}
+
 // Rule represents a Dockerfile lint validation rule.
 // It has the basic id, description, severity attributes and a validation function as an
 // empty interface. For further details on validateFunc, please see Validate how it is
