@@ -7,7 +7,7 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
 
-var _ = NewRule("CPY002", "COPY --chmod=XXXX where XXXX should be a valid permission set value.",
+var _ = NewRule("CPY002", "COPY --chmod=XXXX where XXXX should be a valid permission set value.", "",
 	ValError, ValidateCpy002)
 
 // checks COPY --chmod option format for obvious errors

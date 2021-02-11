@@ -109,7 +109,7 @@ func NewRule(id string, definition string, description string, severity Severity
 		ruleMap[targetBin] = []Rule{rule}
 	}
 
-	return true
+	return &rule
 }
 
 // ID returns the rule's id string.

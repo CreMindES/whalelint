@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var _ = NewRule("WKD001", "WORKDIR should be an absolute path for clarity and reliability.", ValWarning,
+var _ = NewRule("WKD001", "WORKDIR should be an absolute path for clarity and reliability.", "", ValWarning,
 	ValidateWkd001)
 
 func ValidateWkd001(workdirCommand *instructions.WorkdirCommand) RuleValidationResult {

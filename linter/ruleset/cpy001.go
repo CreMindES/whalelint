@@ -6,7 +6,12 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
 
-var _ = NewRule("CPY001", "COPY format is --[chmod|chown|from]=... srcList... dest|destDir",
+var _ = NewRule(
+	"CPY001", "Flag format validation | COPY --[chmod|chown|from]=... srcList... dest|destDir",
+	``+"`COPY`"+` command
+- flags [`+"`chmod`"+`|`+"`chown`"+`|`+"`from`"+`] are preceded by two dashes.
+- `+"`chmod`"+` should have a valid Linux permission value.
+- `+"`chown`"+` should be in `+"`user:group`"+` format.`,
 	ValError, ValidateCpy001)
 
 // checks COPY options format for obvious errors

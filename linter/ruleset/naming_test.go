@@ -24,7 +24,7 @@ func TestRulesetNamingScheme(t *testing.T) {
 	// ruleNameRegexp := regexp.MustCompile("[A-Z]{3}[0-9]{3}.go")
 
 	// Parse package list on packagePath
-	packageList := parsePackageList(t, packagePath)
+	packageList := ParsePackageList(t, packagePath)
 
 	// Get all the validation functions and their file names
 	validationFnMap := parseValidationFnMap(t, packageList)
@@ -62,7 +62,7 @@ func TestRulesetNamingScheme(t *testing.T) {
 
 		// Check for validation function that is defined but not used
 		if ruleNameCheck.newRuleCall.ruleID == "" {
-			t.Log("Rule declared but not added to RuleMap!")
+			t.Log("Rule " + filenameCandidate + " declared but not added to RuleMap!")
 			t.SkipNow()
 		}
 
@@ -74,7 +74,7 @@ func TestRulesetNamingScheme(t *testing.T) {
 	}
 }
 
-func parsePackageList(t *testing.T, path string) map[string]*ast.Package {
+func ParsePackageList(t *testing.T, path string) map[string]*ast.Package {
 	t.Helper()
 
 	packList, err := parser.ParseDir(token.NewFileSet(), path, nil, 0)
@@ -123,10 +123,10 @@ func parseValidationFnMap(t *testing.T, packageList map[string]*ast.Package) Rul
 						fnMap.update(key, filename, functionName, "", "")
 					}
 				} else if newRuleCallAst := filterAstNewRuleCall(d); newRuleCallAst != nil {
-					if basicLit, isBacislit := newRuleCallAst.Args[0].(*ast.BasicLit); isBacislit {
+					if basicLit, isBasiclit := newRuleCallAst.Args[0].(*ast.BasicLit); isBasiclit {
 						ruleID := RemoveQuotes(basicLit.Value)
 
-						validationFuncName := newRuleCallAst.Args[3].(*ast.Ident).String()
+						validationFuncName := newRuleCallAst.Args[4].(*ast.Ident).String()
 						key := strings.ToLower(ruleID)
 
 						fnMap.update(key, filename, "", ruleID, validationFuncName)

@@ -7,7 +7,7 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
 
-var _ = NewRule("CPY003", "COPY chown flag should be in --chown=${USER}:${GROUP} format.",
+var _ = NewRule("CPY003", "COPY chown flag should be in --chown=${USER}:${GROUP} format.", "",
 	ValError, ValidateCpy003)
 
 func ValidateCpy003(copyCommand *instructions.CopyCommand) RuleValidationResult {

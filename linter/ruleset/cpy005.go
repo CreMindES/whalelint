@@ -6,8 +6,8 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
 
-var _ = NewRule("CPY005", "Prefer ADD over COPY for extracting local archives into an image.", ValWarning,
-	ValidateCpy005)
+var _ = NewRule("CPY005", "Prefer ADD over COPY for extracting local archives into an image.", "",
+	ValWarning, ValidateCpy005)
 
 func ValidateCpy005(copyCommand *instructions.CopyCommand) RuleValidationResult {
 	archiveExtensionList := []string{
