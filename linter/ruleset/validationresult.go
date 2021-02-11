@@ -2,6 +2,7 @@ package ruleset
 
 import (
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -27,6 +28,27 @@ func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) 
 		Message:       ruleValidationResult.message,
 		LocationRange: ruleValidationResult.LocationRange,
 	})
+}
+
+func (ruleValidationResult *RuleValidationResult) UnmarshalJSON(data []byte) error {
+	rvr := struct {
+		Rule          *Rule
+		IsViolated    bool
+		Message       string
+		LocationRange LocationRange
+	}{}
+
+	err := json.Unmarshal(data, &rvr)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal RuleValidationResult: %w", err)
+	}
+
+	ruleValidationResult.rule = rvr.Rule
+	ruleValidationResult.isViolated = rvr.IsViolated
+	ruleValidationResult.message = rvr.Message
+	ruleValidationResult.LocationRange = rvr.LocationRange
+
+	return nil
 }
 
 func (ruleValidationResult RuleValidationResult) IsViolated() bool {
