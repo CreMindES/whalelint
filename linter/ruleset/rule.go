@@ -4,7 +4,9 @@ package ruleset
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -37,6 +39,37 @@ func (severity Severity) String() string {
 	default:
 		return "Unknown"
 	}
+}
+
+func (severity Severity) MarshalJSON() ([]byte, error) {
+	return json.Marshal(severity.String())
+}
+
+func (severity *Severity) UnmarshalJSON(data []byte) error {
+	switch strings.Trim(string(data), "\"") {
+	case "Deprecation":
+		*severity = ValDeprecation
+	case "Error":
+		*severity = ValError
+	case "Info":
+		*severity = ValInfo
+	case "Warning":
+		*severity = ValWarning
+	case "Unknown":
+		*severity = ValUnknown
+	default:
+		err := &json.UnmarshalTypeError{
+			Value:  string(data),
+			Type:   reflect.TypeOf(data),
+			Offset: 0,
+			Struct: "",
+			Field:  "",
+		}
+
+		return fmt.Errorf("failed to unmarshal Severity: %w", err)
+	}
+
+	return nil
 }
 
 // DocsReference returns an official reference link connected to the rule itself, most likely directly linking to a
@@ -153,6 +186,27 @@ func (rule Rule) MarshalJSON() ([]byte, error) {
 		Description: rule.description,
 		Severity:    rule.severity,
 	})
+}
+
+func (rule *Rule) UnmarshalJSON(data []byte) error {
+	r := struct {
+		ID          string
+		Definition  string
+		Description string
+		Severity    Severity
+	}{}
+
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal Rule: %w", err)
+	}
+
+	rule.id = r.ID
+	rule.definition = r.Definition
+	rule.description = r.Description
+	rule.severity = r.Severity
+
+	return nil
 }
 
 // RuleMapType represents a set of rules for each Dockerfile AST element
