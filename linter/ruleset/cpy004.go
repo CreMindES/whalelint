@@ -4,7 +4,7 @@ import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
 
-var _ = NewRule("CPY004", "COPY with more than one source requires the destination to end with \"/\".",
+var _ = NewRule("CPY004", "COPY with more than one source requires the destination to end with \"/\".", "",
 	ValError, ValidateCpy004)
 
 func ValidateCpy004(copyCommand *instructions.CopyCommand) RuleValidationResult {

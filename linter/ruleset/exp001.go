@@ -8,7 +8,7 @@ import (
 	Utils "github.com/cremindes/whalelint/utils"
 )
 
-var _ = NewRule("EXP001", "Expose a valid UNIX port.", ValWarning, ValidateExp001)
+var _ = NewRule("EXP001", "Expose a valid UNIX port.", "", ValWarning, ValidateExp001)
 
 func ValidateExp001(exposeCommand *instructions.ExposeCommand) RuleValidationResult {
 	result := RuleValidationResult{

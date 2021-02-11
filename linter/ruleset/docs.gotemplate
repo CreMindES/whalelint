@@ -1,0 +1,40 @@
+# Rule {{ .Rule.ID }}
+
+## Definition
+
+{{ .Rule.Definition }}
+
+## Description
+
+{{ .Rule.Description }}
+
+## Examples
+
+{{ range $key, $value := slice .TestDocs 0 2 }}
+ {{ if not $value.IsViolation }}&#x1F7E2;{{ else }}&#x1F534;{{ end }} &nbsp; {{ .ExampleName }}
+
+```Dockerfile
+{{- $value.DocsContext | nindent 0 }}
+```
+
+{{ end }}
+
+<details><br>
+<summary>Additional examples</summary>
+
+{{ range $key, $value := slice .TestDocs 2 }}
+ {{ if not $value.IsViolation }}&#x1F7E2;{{ else }}&#x1F534;{{ end }} &nbsp; {{ .ExampleName }}
+
+```Dockerfile
+{{- $value.DocsContext | nindent 4 }}
+```
+
+{{ end }}
+
+<p align="right"><sup>Note: all examples are parsed and/or generated from test cases.</sup></p>
+
+</details>
+
+## Reference
+
+- {{ .DocsRef }}

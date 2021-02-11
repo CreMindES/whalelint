@@ -9,55 +9,109 @@ import (
 	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 )
 
+// nolint:funlen
 func TestValidateCpy006(t *testing.T) {
 	t.Parallel()
 
 	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
-		stageName   string
-		stageBase   string
-		copyFrom    string
-		isViolation bool
-		name        string
+		StageName   string
+		StageBase   string
+		CopyFrom    string
+		IsViolation bool
+		ExampleName string
+		DocsContext string
 	}{
-		{stageName: "foo",    copyFrom: "bar",        isViolation: false, name: "Stage name=foo, copy --from=bar."},
-		{stageName: "foo",    copyFrom: "foo",        isViolation:  true, name: "Stage name=foo, copy --from=foo."},
-		{stageName: "",       copyFrom: "foo",        isViolation: false, name: "Stage name=\"\", copy --from=bar."},
-		{stageName: "fooBar", copyFrom: "foo",        isViolation: false, name: "Stage name=fooBar, copy --from=foo."},
-		{stageName: "foo",    copyFrom: "fooBar",     isViolation: false, name: "Stage name=foo, copy --from=fooBar."},
-		{stageName: "foo",    copyFrom: "foo:1.2",    isViolation: false, name: "Stage name=foo, copy --from=foo:1.2."},
 		{
-			stageName: "builder",
-			stageBase: "foo",
-			copyFrom: "foo:latest",
-			isViolation:  true,
-			name: "Stage name=foo, copy --from=foo:latest."},
+			IsViolation: false, ExampleName: "1st stage name is `foo`, copy from `bar`.",
+			StageName: "foo", CopyFrom: "bar",
+			DocsContext: `FROM golang:1.15 as {{ .CopyFrom }}
+                          RUN go build app
+                          FROM ubuntu:20.14 as {{ .StageName }}
+                          COPY --from {{ .CopyFrom }}`,
+		},
 		{
-			stageName: "builder",
-			stageBase: "foo:latest",
-			copyFrom: "foo",
-			isViolation:  true,
-			name: "Stage name=foo, copy --from=foo:latest."},
+			IsViolation:  true, ExampleName: "2nd stage name is `foo`, copy from `foo`.",
+			StageName: "foo", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15 as bar
+                          RUN go build app
+                          FROM ubuntu:20.14 as {{ .StageName }}
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: false, ExampleName: "No stage name, but copy from `bar`",
+			StageName: "", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: false, ExampleName: "1st stage name is `fooBar`, copy from `foo`.",
+			StageName: "fooBar", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: false, ExampleName: "1st stage name is `foo`, copy from `fooBar`.",
+			StageName: "foo", CopyFrom: "fooBar",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
+
+		},
+		{
+			IsViolation: false, ExampleName: "1st stage name is foo, copy from `foo:1.2`.",
+			StageName: "foo", CopyFrom: "foo:1.2",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM ubuntu:20.14
+                          COPY --from {{ .CopyFrom }}`,
+		},
+		{
+			IsViolation: true,
+			ExampleName: "1st stage alias is `builder` and 2nd base image is `foo`, copy from `foo:latest`.",
+			StageName: "builder", StageBase: "foo", CopyFrom: "foo:latest",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM {{ .StageBase }}
+                          COPY --from {{ .CopyFrom }}`,
+
+		},
+		{
+			IsViolation: true,
+			ExampleName: "1st stage alias is `builder` and 2nd base image is `foo:latest`, copy from `foo`.",
+			StageName: "builder", StageBase: "foo:latest", CopyFrom: "foo",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM {{ .StageBase }}
+                          COPY --from {{ .CopyFrom }}`,
+		},
 	}
+
+	RuleSet.RegisterTestCaseDocs("CPY006", testCases)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.ExampleName, func(t *testing.T) {
 			t.Parallel()
 
 			// nolint:exhaustivestruct
 			stage := instructions.Stage{
-				Name:     testCase.stageName,
-				BaseName: testCase.stageBase,
+				Name:     testCase.StageName,
+				BaseName: testCase.StageBase,
 				Commands: []instructions.Command{
 					&instructions.CopyCommand{
-						From: testCase.copyFrom,
+						From: testCase.CopyFrom,
 					},
 				},
 			}
 
-			assert.Equal(t, testCase.isViolation, RuleSet.ValidateCpy006(stage).IsViolated())
+			assert.Equal(t, testCase.IsViolation, RuleSet.ValidateCpy006(stage).IsViolated())
 		})
 	}
 }

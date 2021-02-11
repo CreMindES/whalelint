@@ -8,7 +8,8 @@ import (
 	Utils "github.com/cremindes/whalelint/utils"
 )
 
-var _ = NewRule("CPY006", "COPY from should not be the same as the stage.", ValWarning, ValidateCpy006)
+var _ = NewRule("CPY006", "COPY --from value should not be the same as the stage.", "", ValWarning,
+	ValidateCpy006)
 
 func ValidateCpy006(stage instructions.Stage) RuleValidationResult {
 	result := RuleValidationResult{isViolated: false, LocationRange: LocationRange{}}

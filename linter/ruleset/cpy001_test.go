@@ -11,7 +11,7 @@ import (
 )
 
 type mockCopyNode struct {
-	original string
+	Original string
 	flags    []string
 	next     []string
 }
@@ -22,64 +22,102 @@ func TestValidateCpy001(t *testing.T) {
 
 	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
-		isViolation bool
-		name        string
-		copyNode    mockCopyNode
+		IsViolation bool
+		ExampleName string
+		CopyNode    mockCopyNode
+		DocsContext string
 	}{
-		{isViolation: false, name: "Proper COPY command with 1 --chmod flag.", copyNode: mockCopyNode{
-			original: "COPY --chmod=7780 src src2 dst/",
-			flags: []string{"--chmod=7780"},
-			next: []string{"src", "src2", "dst/"},
-		}},
-		{isViolation: true, name: "COPY command with 1 -chmod flag.", copyNode: mockCopyNode{
-			original: "COPY -chmod=7780 src dst/",
-			flags: []string{},
-			next: []string{"-chmod=7780", "src", "dst/"},
-		}},
-		{isViolation: true, name: "COPY command with 1 chmod flag.", copyNode: mockCopyNode{
-			original: "COPY chmod=7780 src dst/",
-			flags: []string{},
-			next: []string{"chmod=7780", "src", "dst/"},
-		}},
-		{isViolation: true, name: "COPY command with 1 -chown and 1 -chmod flag.", copyNode: mockCopyNode{
-			original: "COPY -chown=user:user -chmod=7780 src dst/",
-			flags: []string{},
-			next: []string{"-chown=user:user", "-chmod=7780", "src", "dst/"},
-		}},
-		{isViolation: false, name: "Strange COPY command with 1 --chmod flag.", copyNode: mockCopyNode{
-			original: "COPY --chmod=7780 chmod chmod.bak/",
-			flags: []string{"--chmod=7780"},
-			next: []string{"chmod", "chmod.bak"},
-		}},
-		{isViolation: true, name: "Strange COPY command with 1 -chmod flag.", copyNode: mockCopyNode{
-			original: "COPY -chmod=7780 chmod chmod.bak/",
-			flags: []string{},
-			next: []string{"-chmod=7780", "chmod", "chmod.bak"},
-		}},
+		{
+			IsViolation: false,
+			ExampleName: "Proper `COPY` command with 1 `--chmod` flag.",
+			CopyNode:    mockCopyNode{
+				Original: "COPY --chmod=7780 src src2 dst/",
+				flags:    []string{"--chmod=7780"},
+				next:     []string{"src", "src2", "dst/"},
+			},
+			DocsContext: "{{ .CopyNode.Original }}",
+		},
+		{
+			IsViolation: true,
+			ExampleName: "`COPY` command with 1 `-chmod` flag.",
+			CopyNode:    mockCopyNode{
+				Original: "COPY -chmod=7780 src dst/",
+				flags:    []string{},
+				next:     []string{"-chmod=7780", "src", "dst/"},
+			},
+			DocsContext: "{{ .CopyNode.Original }}",
+		},
+		{
+			IsViolation: true,
+			ExampleName: "`COPY` command with 1 `chmod` flag.",
+			CopyNode:    mockCopyNode{
+				Original: "COPY chmod=7780 src dst/",
+				flags:    []string{},
+				next:     []string{"chmod=7780", "src", "dst/"},
+			},
+			DocsContext: "{{ .CopyNode.Original }}",
+		},
+		{
+			IsViolation: true,
+			ExampleName: "`COPY` command with 1 `-chown` and 1 `-chmod` flag.",
+			CopyNode:    mockCopyNode{
+				Original: "COPY -chown=user:user -chmod=7780 src dst/",
+				flags:    []string{},
+				next:     []string{"-chown=user:user", "-chmod=7780", "src", "dst/"},
+			},
+			DocsContext: "{{ .CopyNode.Original }}",
+		},
+		{
+			IsViolation: false,
+			ExampleName: "Strange `COPY` command with 1 `--chmod` flag.",
+			CopyNode:    mockCopyNode{
+				Original: "COPY --chmod=7780 chmod chmod.bak/",
+				flags:    []string{"--chmod=7780"},
+				next:     []string{"chmod", "chmod.bak"},
+			},
+			DocsContext: "{{ .CopyNode.Original }}",
+		},
+		{
+			IsViolation: true,
+			ExampleName: "Strange `COPY` command with 1 `-chmod` flag.",
+			CopyNode:    mockCopyNode{
+				Original: "COPY -chmod=7780 chmod chmod.bak/",
+				flags:    []string{},
+				next:     []string{"-chmod=7780", "chmod", "chmod.bak"},
+			},
+			DocsContext: "{{ .CopyNode.Original }}",
+		},
 		// buildkit responses with Parser error for the following, as it ends up with a flag --chmod without value
-		// {isViolation: true, name: "Strange COPY command with 1 --chmod = flag.", copyNode: mockCopyNode{
-		// 	original: "COPY --chmod = 7780 chmod chmod.bak/",
-		// 	flags: []string{"--chmod"},
-		// 	next: []string{"=", "7780", "chmod", "chmod.bak"},
-		// }},
+		// {
+		// 	IsViolation: true,
+		// 	ExampleName: "Strange COPY command with 1 --chmod = flag.",
+		// 	CopyNode:    mockCopyNode{
+		// 		Original: "COPY --chmod = 7780 chmod chmod.bak/",
+		// 		flags: []string{"--chmod"},
+		// 		next: []string{"=", "7780", "chmod", "chmod.bak"},
+		// 	},
+		// 	DocsContext: "{{ .CopyNode.Original }}",
+		// },
 	}
+
+	RuleSet.RegisterTestCaseDocs("CPY001", testCases)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.ExampleName, func(t *testing.T) {
 			t.Parallel()
 
 			// nolint:exhaustivestruct
 			node := &parser.Node{
 				Value:    "copy",
-				Original: testCase.copyNode.original,
-				Flags:    testCase.copyNode.flags,
+				Original: testCase.CopyNode.Original,
+				Flags:    testCase.CopyNode.flags,
 			}
 
 			// fill out Next values down the tree
 			nextPointer := &node.Next
-			for _, next := range testCase.copyNode.next {
+			for _, next := range testCase.CopyNode.next {
 				*nextPointer = &parser.Node{Value: next} // nolint:exhaustivestruct
 				nextPointer = &(*nextPointer).Next
 			}
@@ -93,7 +131,7 @@ func TestValidateCpy001(t *testing.T) {
 				t.Error("cannot type assert instruction to *instructions.CopyCommand")
 			}
 
-			assert.Equal(t, testCase.isViolation, RuleSet.ValidateCpy001(command).IsViolated())
+			assert.Equal(t, testCase.IsViolation, RuleSet.ValidateCpy001(command).IsViolated())
 		})
 	}
 }
