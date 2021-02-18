@@ -120,7 +120,9 @@ func (rule *Rule) Validate(param interface{}) RuleValidationResult {
 	// Get back actual result and assign rule to rule validation result
 	result, ok := funcReflectResult[0].Interface().(RuleValidationResult)
 	if ok {
-		result.rule = rule
+		// deep copy
+		r := *rule
+		result.rule = &r
 	} else {
 		log.Error("Cannot retrieve RuleValidationResult from reflect call.")
 	}
