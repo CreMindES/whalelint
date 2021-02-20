@@ -6,7 +6,7 @@ type DocsReference string
 
 const ToDoReference = DocsReference("TODO")
 
-var docsReferenceMap = map[string]DocsReference{ // nolint:gochecknoglobals
+var DocsReferenceMap = map[string]DocsReference{ // nolint:gochecknoglobals
 	"CPY": DocsReference("https://docs.docker.com/engine/reference/builder/#copy"),
 	"ENV": DocsReference("https://docs.docker.com/engine/reference/builder/#env"),
 	"EXP": DocsReference("https://docs.docker.com/engine/reference/builder/#expose"),
