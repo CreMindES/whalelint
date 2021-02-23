@@ -10,15 +10,16 @@ import (
 	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 )
 
-// TestValidateCPY001 tests COPY command validation
+// TestValidateCPY004 tests COPY command validation
 //
 // Scenario: COPY command with multiple sources and one destination
 //
-// GIVEN a copy command WHEN | sources are | destination is | THEN | this should be {}.
-//                           |    src1     |     dest       |      |      VALID      |
-//                           |    src1     |     dest/      |      |      VALID      |
-//                           |  src1 src2  |     dest       |      |     INVALID     |
-//                           |  src1 src2  |     dest/      |      |      VALID      |
+// GIVEN a copy command WHEN |  sources are  | destination is | THEN | this should be {}.
+//                           |     src1      |     dest       |      |        VALID       |
+//                           |     src1      |     dest/      |      |        VALID       |
+//                           |   src1 src2   |     dest       |      |       INVALID      |
+//                           |   src1 src2   |     dest/      |      |        VALID       |
+//                           | -chmod=7 src1 |     dest/      |      |        VALID       |
 func TestValidateCpy004(t *testing.T) {
 	t.Parallel()
 
@@ -30,6 +31,7 @@ func TestValidateCpy004(t *testing.T) {
 		{"src1      dst1/", true},
 		{"src1 src2 dst1 ", false},
 		{"src1 src2 dst1/", true},
+		{"-chmod=7 src2 dst1/", true},
 	}
 
 	for _, testCase := range testCases {

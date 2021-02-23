@@ -11,6 +11,7 @@ import (
 
 	Linter "github.com/cremindes/whalelint/linter"
 	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
+	Parser "github.com/cremindes/whalelint/parser"
 	Report "github.com/cremindes/whalelint/report"
 	Utils "github.com/cremindes/whalelint/utils"
 )
@@ -83,6 +84,17 @@ func (lintCommand *LintCommand) Run() error {
 	if metaArgs != nil {
 		log.Debug("metaArgs |", metaArgs)
 	}
+
+	fileContent, err := Utils.ReadFileContents(filePath)
+	if err != nil {
+		// this is virtually unreachable, so no test case for this branch
+		// could put before the AST parsing, but it would only server test coverage percentage fetish,
+		// while hurting readability marginally.
+		// TODO: rethink error handling here.
+		return fmt.Errorf("linter | %w", err)
+	}
+
+	Parser.RawParser.UpdateRawStr(fileContent)
 
 	// Run Linter
 	linter := Linter.Linter{}

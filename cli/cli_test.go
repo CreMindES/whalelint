@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"strings"
 	"syscall"
 	"testing"
@@ -16,6 +15,7 @@ import (
 	"gotest.tools/assert"
 
 	"github.com/cremindes/whalelint/cli"
+	TestHelper "github.com/cremindes/whalelint/testhelper"
 )
 
 type StdBuffer struct {
@@ -201,7 +201,7 @@ func TestLintCommand_Run(t *testing.T) {
 
 			err = ctx.Run()
 
-			isSameErr := CheckForErrorRecursively(t, err, testCase.Expected)
+			isSameErr := TestHelper.CheckForErrorRecursively(t, err, testCase.Expected)
 			assert.Equal(t, true, isSameErr)
 			if testCase.Expected != nil {
 				assert.ErrorContains(t, err, testCase.ExpectedErrStr)
@@ -217,34 +217,5 @@ func TestLintCommand_Run(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func CheckForErrorRecursively(t *testing.T, err error, target error) bool {
-	t.Helper()
-
-	// first check for unwrapped errors, especially where both are nil
-	if err == nil && target == nil {
-		return true
-	}
-
-	if errors.Is(err, target) {
-		return true
-	}
-
-	unWrappedErr := err
-	targetType := reflect.TypeOf(target)
-
-	for {
-		e := errors.Unwrap(unWrappedErr)
-		if e != nil {
-			unWrappedErr = e
-
-			if reflect.TypeOf(e) == targetType {
-				return true
-			}
-		} else {
-			return false
-		}
 	}
 }

@@ -29,16 +29,14 @@ func ValidateExp001(exposeCommand *instructions.ExposeCommand) RuleValidationRes
 			isProtocolValid := checkProtocolValue(protocol)
 
 			result.SetViolated(!isPortValid || !isProtocolValid)
+			result.LocationRange = ParseLocationFromRawParser(portStr, exposeCommand.Location())
 		} else {
 			// port only format
 			isPortValid := Utils.IsUnixPortValid(portStr)
 			result.SetViolated(!isPortValid)
+			result.LocationRange = ParseLocationFromRawParser(portStr, exposeCommand.Location())
 		}
 	}
-
-	// location
-	result.LocationRange.start.charNumber = len("EXPOSE ")
-	result.LocationRange.end.charNumber = len(exposeCommand.String())
 
 	return result
 }

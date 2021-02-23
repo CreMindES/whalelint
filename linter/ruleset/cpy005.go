@@ -24,7 +24,8 @@ func ValidateCpy005(copyCommand *instructions.CopyCommand) RuleValidationResult 
 	for _, archiveExt := range archiveExtensionList {
 		if fileExt == archiveExt {
 			result.SetViolated()
-			result.LocationRange.end.charNumber = 4
+			result.LocationRange.start.charNumber = 0
+			result.LocationRange.end.charNumber = len("COPY")
 		}
 	}
 
