@@ -38,7 +38,7 @@ func (severity Severity) String() string {
 	case ValWarning:
 		return "Warning"
 	case ValUnknown:
-		return "Unknown"
+		return "Unknown" // nolint:goconst
 	default:
 		return "Unknown"
 	}
