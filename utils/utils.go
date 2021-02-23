@@ -5,6 +5,7 @@ package utils
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -174,18 +175,20 @@ func MatchDockerImageNames(str1, str2 string) bool {
 	return strings.TrimSuffix(str1, ":latest") == strings.TrimSuffix(str2, ":latest")
 }
 
-func GetDockerfileAst(filePathString string) (stages []instructions.Stage, metaArgs []instructions.ArgCommand) {
+func GetDockerfileAst(filePathString string) ([]instructions.Stage, []instructions.ArgCommand, error) {
 	filePath := filepath.Clean(filePathString)
 
 	fileHandle, err := os.Open(filePath)
 	if err != nil {
-		log.Error("Cannot open Dockerfile \"", filePath, "\".", err)
+		// log.Error("Cannot open Dockerfile \"", filePath, "\".", err)
+		return nil, nil, fmt.Errorf("%w", err)
 	}
 	defer fileHandle.Close()
 
 	dockerfile, err := parser.Parse(fileHandle)
 	if err != nil {
-		log.Error("Cannot parse Dockerfile \"", filePath, "\"", err)
+		// log.Error("Cannot parse Dockerfile \"", filePath, "\"", err)
+		return nil, nil, fmt.Errorf("dockerfile parse | %w", err)
 	}
 
 	stageList, metaArgs, err := instructions.Parse(dockerfile.AST)
@@ -194,7 +197,7 @@ func GetDockerfileAst(filePathString string) (stages []instructions.Stage, metaA
 		stageList, metaArgs = ParseDockerfileInstructionsSafely(dockerfile, fileHandle) // nolint:wsl
 	}
 
-	return stageList, metaArgs
+	return stageList, metaArgs, nil
 }
 
 // ParseDockerfileInstructionsSafely parses Dockerfile Instructions representation by iteratively trying to correct

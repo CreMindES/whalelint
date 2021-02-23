@@ -7,9 +7,15 @@ import (
 	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 )
 
+var MainLinter Linter // nolint:gochecknoglobals
+
+// Linter
+// TODO: add config Config.
+type Linter struct{}
+
 // nolint:nestif, funlen, gocognit
 /* Validate each Dockerfile AST entry against rules in ruleset package. */
-func Run(stageList []instructions.Stage) []RuleSet.RuleValidationResult {
+func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationResult {
 	var ruleValidationResultArray []RuleSet.RuleValidationResult // nolint:prealloc
 
 	// Call Dockerfile AST level validators

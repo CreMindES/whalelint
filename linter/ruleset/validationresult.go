@@ -114,7 +114,7 @@ func (ruleValidationResult *RuleValidationResult) RuleID() string {
 
 func (ruleValidationResult *RuleValidationResult) Message() string {
 	if len(ruleValidationResult.message) == 0 {
-		return ruleValidationResult.rule.Description()
+		return ruleValidationResult.rule.Definition()
 	}
 
 	return ruleValidationResult.message

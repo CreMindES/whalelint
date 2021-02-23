@@ -1,48 +1,52 @@
 package main
 
-// nolint
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 
+	"github.com/alecthomas/kong"
 	log "github.com/sirupsen/logrus"
-	"robpike.io/filter"
 
-	Linter "github.com/cremindes/whalelint/linter"
+	CLI "github.com/cremindes/whalelint/cli"
 	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
-	Utils "github.com/cremindes/whalelint/utils"
 )
 
 func main() {
 	log.SetLevel(log.DebugLevel)
 	log.Debug("We have", RuleSet.Get().Count(), "ruleset.")
 
-	/* CLI - TODO */
-	filePath := os.Args[1]
+	// Get arguments
+	args := os.Args[1:]
 
-	/* Parse Dockerfile */
-	stageList, metaArgs := Utils.GetDockerfileAst(filePath)
-	if metaArgs != nil {
-		log.Debug("metaArgs |", metaArgs)
+	cli := CLI.WhaleLintCLI{}
+
+	// Create our CLI
+	parser := kong.Must(&cli, cli.Options()...)
+
+	// If no argument is given, show help/usage
+	if len(args) == 0 {
+		args = []string{"--help"}
 	}
 
-	/* Run Linter */
-	ruleValidationResultArray := Linter.Run(stageList)
-	violations := filter.Choose(ruleValidationResultArray,
-		func(x RuleSet.RuleValidationResult) bool {
-			return x.IsViolated()
-		})
+	// Parse arguments
+	ctx, err := parser.Parse(args)
+	// Use lint as default command if none is given
+	if err != nil {
+		cli.ApplyDefaultCommand(err, &args)
 
-	/* Print result | TODO: cli dependent output */
-	printResultAsJSON(violations)
-}
+		ctx, err = parser.Parse(args)
+		if err != nil {
+			// log.Error(err)
+			parser.FatalIfErrorf(err)
+			os.Exit(1)
+		}
+	}
 
-func printResultAsJSON(violations interface{}) {
-	resultJSON, err := json.Marshal(violations)
+	// Run command selected by CLI
+	err = ctx.Run(
+		kong.Name("WhaleLint"),
+	)
+
 	if err != nil {
 		log.Error(err)
 	}
-
-	fmt.Println(string(resultJSON)) // nolint:forbidigo
 }
