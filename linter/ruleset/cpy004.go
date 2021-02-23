@@ -1,6 +1,8 @@
 package ruleset
 
 import (
+	"strings"
+
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
 
@@ -13,7 +15,15 @@ func ValidateCpy004(copyCommand *instructions.CopyCommand) RuleValidationResult 
 		LocationRange: LocationRangeFromCommand(copyCommand),
 	}
 
-	if len(copyCommand.SourcesAndDest.Sources()) > 1 {
+	sourceCount := len(copyCommand.SourcesAndDest.Sources())
+	// in case of CPY002 violation, the flag can end up in the sources list
+	for _, src := range copyCommand.SourcesAndDest {
+		if strings.HasPrefix(src, "-") {
+			sourceCount--
+		}
+	}
+
+	if sourceCount > 1 {
 		// is valid
 		destination := copyCommand.SourcesAndDest.Dest()
 		destinationLastChar := destination[len(destination)-1]
