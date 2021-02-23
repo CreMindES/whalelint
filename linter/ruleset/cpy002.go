@@ -2,7 +2,6 @@ package ruleset
 
 import (
 	"regexp"
-	"strings"
 
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 )
@@ -26,9 +25,7 @@ func ValidateCpy002(copyCommand *instructions.CopyCommand) RuleValidationResult 
 
 	if result.IsViolated() {
 		result.message = "Invalid Unix permission value."
-		unixPermissionValueIndex := strings.Index(copyCommand.String(), copyCommand.Chmod)
-		result.LocationRange.start.charNumber = unixPermissionValueIndex
-		result.LocationRange.end.charNumber = unixPermissionValueIndex + len(copyCommand.Chmod)
+		result.LocationRange = ParseLocationFromRawParser(copyCommand.Chmod, copyCommand.Location())
 	}
 
 	return result

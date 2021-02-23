@@ -26,11 +26,13 @@ func ValidateCpy001(copyCommand *instructions.CopyCommand) RuleValidationResult 
 	regexpWrongNumberOfDashViolation := regexp.MustCompile(`[^-](|-|-{3,})(chmod|chown|from)[ ]{0,1}=`)
 	if regexpWrongNumberOfDashViolation.MatchString(copyCommand.String()) {
 		result.SetViolated()
-		// update location
-		indexSlice := regexpWrongNumberOfDashViolation.FindAllStringIndex(copyCommand.String(), 2)
-		result.LocationRange.start.charNumber = indexSlice[0][0]
-		result.LocationRange.end.charNumber = indexSlice[0][1]
+		result.message = "Flags must be prefixed with exactly two dashes."
+
+		wrongFlagStr := regexpWrongNumberOfDashViolation.FindString(copyCommand.SourcesAndDest[0])
+		result.LocationRange = ParseLocationFromRawParser(wrongFlagStr, copyCommand.Location())
 	}
+
+	// TODO: support invalid flag. Note: it might need contribution to buildkit.
 
 	return result
 }
