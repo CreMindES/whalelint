@@ -1,8 +1,6 @@
 package ruleset
 
 import (
-	"strings"
-
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 
 	Utils "github.com/cremindes/whalelint/utils"
@@ -19,8 +17,7 @@ func ValidateCpy006(stage instructions.Stage) RuleValidationResult {
 			if copyCommand.From == stage.Name || copyCommand.From == stage.BaseName ||
 				Utils.MatchDockerImageNames(copyCommand.From, stage.BaseName) {
 				result.SetViolated()
-				result.LocationRange = LocationRangeFromCommand(command)
-				result.LocationRange.end.charNumber = strings.LastIndex(copyCommand.String(), copyCommand.From)
+				result.LocationRange = ParseLocationFromRawParser(copyCommand.From, copyCommand.Location())
 			}
 		}
 	}

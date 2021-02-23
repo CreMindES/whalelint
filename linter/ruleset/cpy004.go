@@ -28,11 +28,12 @@ func ValidateCpy004(copyCommand *instructions.CopyCommand) RuleValidationResult 
 		destination := copyCommand.SourcesAndDest.Dest()
 		destinationLastChar := destination[len(destination)-1]
 		result.SetViolated(destinationLastChar != '/')
-
-		// further narrow location
-		lineLength := len(copyCommand.String())
-		result.LocationRange.start.charNumber = lineLength - len(destination)
-		result.LocationRange.end.charNumber = lineLength
+		// location
+		// note: prefixing the destination with a space in order to avoid the edge case, where the destination can be
+		//       found in the source as well as a substring. This prefix need to be cut off, that's why the increment at
+		//       the end.
+		result.LocationRange = ParseLocationFromRawParser(" "+destination, copyCommand.Location())
+		result.LocationRange.start.charNumber++
 	}
 
 	return result
