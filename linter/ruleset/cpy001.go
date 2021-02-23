@@ -23,7 +23,7 @@ func ValidateCpy001(copyCommand *instructions.CopyCommand) RuleValidationResult 
 	}
 
 	// can't use lookahead, lookbehind as it is not supported in Go's regexp.
-	regexpWrongNumberOfDashViolation := regexp.MustCompile(`\s+(|-|-{3,})(chmod|chown|from)[ ]{0,1}=`)
+	regexpWrongNumberOfDashViolation := regexp.MustCompile(`[^-](|-|-{3,})(chmod|chown|from)[ ]{0,1}=`)
 	if regexpWrongNumberOfDashViolation.MatchString(copyCommand.String()) {
 		result.SetViolated()
 		// update location
