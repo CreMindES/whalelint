@@ -79,7 +79,7 @@ func ExtractDocFieldsFromTestCase(testDocsReflect reflect.Value, parent reflect.
 
 // ApplyTemplate generates text from templateStr and sourceStruct.
 func ApplyTemplate(templateStr string, sourceStruct interface{}) (string, error) {
-	templateEngine, _ := template.New("test").Parse(templateStr)
+	templateEngine, _ := template.New("ruleDocs").Parse(templateStr)
 	strBuilder := strings.Builder{}
 
 	if err := templateEngine.Execute(&strBuilder, sourceStruct); err != nil {
