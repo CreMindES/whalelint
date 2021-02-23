@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -165,6 +166,16 @@ func IsUnixPortValid(portParam interface{}) bool {
 	}
 
 	return false
+}
+
+func ReadFileContents(filePath string) (string, error) {
+	// TODO: migrate to 1.16 os.ReadFile
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("%w", err)
+	}
+
+	return string(data), nil
 }
 
 /* Docker related functions. */

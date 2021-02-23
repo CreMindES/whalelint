@@ -6,6 +6,8 @@ import (
 
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
+
+	Parser "github.com/cremindes/whalelint/parser"
 )
 
 type LocationRange struct {
@@ -83,7 +85,7 @@ func (locationRange *LocationRange) UnmarshalJSON(data []byte) error {
 	}
 
 	locationRange.start = &lr.Start
-	locationRange.end   = &lr.End // nolint:gofmt,gofumpt
+	locationRange.end   = &lr.End // nolint:gofmt,gofumpt,goimports
 
 	return nil
 }
@@ -130,5 +132,22 @@ func NewLocationRange(startLine, startChar, endLine, endChar int) LocationRange 
 			lineNumber: endLine,
 			charNumber: endChar,
 		},
+	}
+}
+
+func ParseLocationFromRawParser(str string, window []parser.Range) LocationRange {
+	if !Parser.RawParser.IsInitialized() {
+		return CopyLocationRange(window)
+	}
+
+	return NewLocationFrom4Int(
+		Parser.RawParser.StringLocation(str, window),
+	)
+}
+
+func NewLocationFrom4Int(locationRange [4]int) LocationRange {
+	return LocationRange{
+		start: &Location{locationRange[0], locationRange[1]},
+		end:   &Location{locationRange[2], locationRange[3]},
 	}
 }
