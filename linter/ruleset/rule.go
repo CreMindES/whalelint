@@ -25,6 +25,11 @@ const (
 	ValUnknown
 )
 
+// GetSeverityList returns a list of all the Severity values.
+func GetSeverityList() []Severity {
+	return []Severity{ValError, ValWarning, ValInfo, ValDeprecation, ValUnknown}
+}
+
 // Severity.String() converts the raw Severity into a string.
 // Chose not to use "go:generate stringer -type=Severity" due this being much more readable.
 func (severity Severity) String() string {
