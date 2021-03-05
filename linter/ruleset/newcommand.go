@@ -98,6 +98,28 @@ func NewCmdCommand(str string, lineNumber int) (*instructions.CmdCommand, error)
 	return cmdCommand, nil
 }
 
+func NewMaintainerCommand(str string) (*instructions.MaintainerCommand, error) {
+	buf := bytes.Buffer{}
+	buf.WriteString("FROM golang:1.16\n")
+	buf.WriteString("MAINTAINER " + str + "\n")
+
+	reader := bytes.NewReader(buf.Bytes())
+
+	stageList, err := parseMockDockerfile(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	command := stageList[0].Commands[0]
+
+	maintainerCommand, ok := command.(*instructions.MaintainerCommand)
+	if !ok {
+		return nil, fmt.Errorf("RuleSet test helper | %w", err)
+	}
+
+	return maintainerCommand, nil
+}
+
 func parseMockDockerfile(reader io.Reader) ([]instructions.Stage, error) {
 	dockerfile, err := parser.Parse(reader)
 	if err != nil {
