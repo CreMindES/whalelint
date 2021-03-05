@@ -47,9 +47,8 @@ const (
 
 // SummaryOption holds the global settings for the summary.
 type SummaryOption struct {
-	NoColor      bool
-	ShortSummary bool
-	Verbosity    VerbosityLevel
+	NoColor   bool
+	Verbosity VerbosityLevel
 }
 
 // PrintOptions represents finer grain, printing specific options.
@@ -189,7 +188,7 @@ func PrintSummary(violations []RuleSet.RuleValidationResult, writer io.Writer, o
 	AssembleSummaryHeader(findingsMap, printOptions, strBuilder)
 
 	// End of VerbosityShort summary
-	if options.ShortSummary || options.Verbosity == VerbosityShort { // Short Summary ends here
+	if options.Verbosity == VerbosityShort { // Short Summary ends here
 		printToOutput(strBuilder.String(), writer)
 
 		return
