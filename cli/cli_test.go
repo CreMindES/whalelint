@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
+	"net"
 	"os"
 	"strings"
 	"syscall"
@@ -120,6 +121,26 @@ func TestCliType_ApplyDefaultCommand(t *testing.T) {
 	}
 }
 
+func TestLspCommand_Run(t *testing.T) {
+	t.Parallel()
+
+	// Calling LSP with the wrong port in order to check,
+	port := "99999999"
+	args := []string{"lsp", "--port", port}
+
+	ctx, _, err := generateCLI(args)
+	assert.NilError(t, err)
+
+	err = ctx.Run()
+
+	var netAddrError *net.AddrError
+	if errors.As(err, &netAddrError) {
+		assert.Equal(t, port, netAddrError.Addr)
+	} else {
+		t.Failed()
+	}
+}
+
 // nolint:funlen,paralleltest
 func TestLintCommand_Run(t *testing.T) {
 	testCases := []struct {
@@ -206,14 +227,15 @@ func TestLintCommand_Run(t *testing.T) {
 			if testCase.Expected != nil {
 				assert.ErrorContains(t, err, testCase.ExpectedErrStr)
 			}
-			println(stdOut.String())
+
 			if len(testCase.ExpectedStdout) > 0 {
 				assert.Equal(t, true, strings.Contains(stdOut.String(), testCase.ExpectedStdout))
 			}
 
 			for _, tmpFile := range tmpFileSlice {
 				if tmpFile != nil {
-					os.Remove(tmpFile.Name())
+					err := os.Remove(tmpFile.Name())
+					assert.NilError(t, err)
 				}
 			}
 		})
