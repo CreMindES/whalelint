@@ -14,11 +14,14 @@ import (
 
 var _ = NewRule("RUN002", "Consider pinning versions of packages", "", ValWarning, ValidateRun002)
 
+// nolint:funlen
 func ValidateRun002(runCommand *instructions.RunCommand) RuleValidationResult {
 	result := RuleValidationResult{
 		isViolated:    false,
 		LocationRange: LocationRangeFromCommand(runCommand),
 	}
+
+	printBodyWidthThreshold := 60
 
 	packageWithoutVersionList := make([]string, 0)
 	filterFunc := func(packageVersion string) bool {
@@ -87,7 +90,7 @@ func ValidateRun002(runCommand *instructions.RunCommand) RuleValidationResult {
 		sort.Strings(packageWithoutVersionList)
 		packageWithoutVersionListStr := strings.Join(packageWithoutVersionList, ", ")
 
-		if len(packageWithoutVersionListStr) < 60 {
+		if len(packageWithoutVersionListStr) < printBodyWidthThreshold {
 			result.message = fmt.Sprintf("%s \"%s\" %s no version specified.",
 				english.PluralWord(len(packageWithoutVersionList), "Package", ""),
 				packageWithoutVersionListStr,
