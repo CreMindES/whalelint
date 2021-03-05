@@ -3,14 +3,13 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/alecthomas/kong"
 	log "github.com/sirupsen/logrus"
-	"robpike.io/filter"
 
 	Linter "github.com/cremindes/whalelint/linter"
-	RuleSet "github.com/cremindes/whalelint/linter/ruleset"
 	Parser "github.com/cremindes/whalelint/parser"
 	Report "github.com/cremindes/whalelint/report"
 	Utils "github.com/cremindes/whalelint/utils"
@@ -99,14 +98,18 @@ func (lintCommand *LintCommand) Run() error {
 	// Run Linter
 	linter := Linter.Linter{}
 	ruleValidationResultArray := linter.Run(stageList)
-	violations := filter.Choose(ruleValidationResultArray,
-		func(x RuleSet.RuleValidationResult) bool {
-			return x.IsViolated()
-		},
-	)
 
-	/* Print result | TODO: cli dependent output */
-	Report.PrintResultAsJSON(violations)
+	switch lintCommand.Format {
+	case "json":
+		Report.PrintResultAsJSON(ruleValidationResultArray, os.Stdout)
+	case "summary":
+		options := Report.SummaryOption{
+			NoColor:      lintCommand.NoColor,
+			ShortSummary: lintCommand.ShortSummary,
+			Verbosity:    Report.VerbosityNormal,
+		}
+		Report.PrintSummary(ruleValidationResultArray, os.Stdout, options)
+	}
 
 	return nil
 }
