@@ -14,30 +14,37 @@ func TestValidateCpy002(t *testing.T) {
 
 	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
-		chmodValue   string
-		isViolation  bool
-		name         string
+		ChmodValue  string
+		IsViolation bool
+		ExampleName string
+		DocsContext string
 	}{
-		{chmodValue: "7440", isViolation: false, name: "COPY with chmod=7440"},
-		{chmodValue:  "644", isViolation: false, name: "COPY with chmod=644" },
-		{chmodValue:   "88", isViolation:  true, name: "COPY with chmod=88"  },
-		{chmodValue: "7780", isViolation:  true, name: "COPY with chmod=7780"},
+		{ChmodValue: "7440", IsViolation: false, ExampleName: "COPY with chmod=7440",
+			DocsContext: "FROM golang 1.15\nCOPY --chmod={{ .ChmodValue }} src dst"},
+		{ChmodValue: "644", IsViolation: false, ExampleName: "COPY with chmod=644",
+			DocsContext: "FROM golang 1.15\nCOPY --chmod={{ .ChmodValue }} src dst"},
+		{ChmodValue: "88", IsViolation:  true, ExampleName: "COPY with chmod=88",
+			DocsContext: "FROM golang 1.15\nCOPY --chmod={{ .ChmodValue }} src dst"},
+		{ChmodValue: "7780", IsViolation:  true, ExampleName: "COPY with chmod=7780",
+			DocsContext: "FROM golang 1.15\nCOPY --chmod={{ .ChmodValue }} src dst"},
 	}
+
+	RuleSet.RegisterTestCaseDocs("CPY002", testCases)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.ExampleName, func(t *testing.T) {
 			t.Parallel()
 
 			command := &instructions.CopyCommand{
 				SourcesAndDest: []string{},
 				From:           "",
 				Chown:          "",
-				Chmod:          testCase.chmodValue,
+				Chmod:          testCase.ChmodValue,
 			}
 
-			assert.Equal(t, testCase.isViolation, RuleSet.ValidateCpy002(command).IsViolated())
+			assert.Equal(t, testCase.IsViolation, RuleSet.ValidateCpy002(command).IsViolated())
 		})
 	}
 }

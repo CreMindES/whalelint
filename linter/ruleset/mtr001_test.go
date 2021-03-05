@@ -31,6 +31,8 @@ func TestValidateMtr001(t *testing.T) {
 		},
 	}
 
+	RuleSet.RegisterTestCaseDocs("MTR001", testCases)
+
 	for _, testCase := range testCases {
 		testCase := testCase
 

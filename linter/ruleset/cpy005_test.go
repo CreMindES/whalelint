@@ -13,30 +13,42 @@ import (
 func TestValidateCpy005(t *testing.T) {
 	t.Parallel()
 
-	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
-		commandParam string
-		isViolation  bool
-		name         string
+		CommandParam string
+		IsViolation  bool
+		ExampleName  string
+		DocsContext  string
 	}{
-		{commandParam: "foo/bar /tmp/"       , isViolation: false, name: "Standard COPY."  },
-		{commandParam: "foo/bar.tar.gz /tmp/", isViolation:  true, name: "COPY \".tar.gz\""},
+		{
+			CommandParam: "foo/bar /tmp/",
+			IsViolation:  false,
+			ExampleName:  "Standard COPY.",
+			DocsContext:  "FROM golang:1.15\nCOPY {{ .CommandParam }}",
+		},
+		{
+			CommandParam: "foo/bar.tar.gz /tmp/",
+			IsViolation:  true,
+			ExampleName:  "COPY \".tar.gz\"",
+			DocsContext:  "FROM golang:1.15\nCOPY {{ .CommandParam }}",
+		},
 	}
+
+	RuleSet.RegisterTestCaseDocs("CPY005", testCases)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.ExampleName, func(t *testing.T) {
 			t.Parallel()
 
 			command := &instructions.CopyCommand{
-				SourcesAndDest: strings.Fields(testCase.commandParam),
+				SourcesAndDest: strings.Fields(testCase.CommandParam),
 				From:           "",
 				Chown:          "",
 				Chmod:          "",
 			}
 
-			assert.Equal(t, testCase.isViolation, RuleSet.ValidateCpy005(command).IsViolated())
+			assert.Equal(t, testCase.IsViolation, RuleSet.ValidateCpy005(command).IsViolated())
 		})
 	}
 }

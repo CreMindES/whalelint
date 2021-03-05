@@ -14,33 +14,60 @@ func TestValidateExp001(t *testing.T) {
 
 	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
-		portValue    []string
-		isViolation  bool
-		name         string
+		PortValue   []string
+		IsViolation bool
+		ExampleName string
+		DocsContext string
 	}{
-		{portValue: []string{"4242"                        }, isViolation: false, name: "EXPOSE 4242"      },
-		{portValue: []string{"4242/tcp"                    }, isViolation: false, name: "EXPOSE 4242/tcp"  },
-		{portValue: []string{"4242/udp"                    }, isViolation: false, name: "EXPOSE 4242/udp"  },
-		{portValue: []string{"4242/yyy"                    }, isViolation:  true, name: "EXPOSE 4242/yyy"  },
-		{portValue: []string{"4242:tcp"                    }, isViolation:  true, name: "EXPOSE 4242:tcp"  },
-		{portValue: []string{"4242", "4242/tcp", "4242/udp"}, isViolation: false,
-			name: "EXPOSE 4242, 4242/tcp, 4242/udp"},
-		{portValue: []string{"67999"                       }, isViolation:  true, name: "EXPOSE 67999"     },
-		{portValue: []string{"4242", "67999", "4242/udp"   }, isViolation:  true,
-			name: "EXPOSE 4242, 67999, 4242/udp"},
+		{
+			PortValue:   []string{"4242"},
+			IsViolation: false,
+			ExampleName: "EXPOSE 4242",
+			DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"4242/tcp"}, IsViolation: false,
+			ExampleName: "EXPOSE 4242/tcp", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"4242/udp"}, IsViolation: false,
+			ExampleName: "EXPOSE 4242/udp", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"4242/yyy"}, IsViolation: true,
+			ExampleName: "EXPOSE 4242/yyy", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"4242:tcp"}, IsViolation: true,
+			ExampleName: "EXPOSE 4242:tcp", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"4242", "4242/tcp", "4242/udp"}, IsViolation: false,
+			ExampleName: "EXPOSE 4242, 4242/tcp, 4242/udp", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"67999"}, IsViolation: true,
+			ExampleName: "EXPOSE 67999", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
+		{
+			PortValue:   []string{"4242", "67999", "4242/udp" }, IsViolation: true,
+			ExampleName: "EXPOSE 4242, 67999, 4242/udp", DocsContext: "FROM golang:1.15\nEXPOSE {{ .PortValue }}",
+		},
 	}
+
+	RuleSet.RegisterTestCaseDocs("EXP001", testCases)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run(testCase.ExampleName, func(t *testing.T) {
 			t.Parallel()
 
 			command := &instructions.ExposeCommand{
-				Ports: testCase.portValue,
+				Ports: testCase.PortValue,
 			}
 
-			assert.Equal(t, testCase.isViolation, RuleSet.ValidateExp001(command).IsViolated())
+			assert.Equal(t, testCase.IsViolation, RuleSet.ValidateExp001(command).IsViolated())
 		})
 	}
 }

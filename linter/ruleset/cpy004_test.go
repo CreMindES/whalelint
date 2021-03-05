@@ -23,25 +23,30 @@ import (
 func TestValidateCpy004(t *testing.T) {
 	t.Parallel()
 
+	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
-		commandParam string
-		expected     bool
+		CommandParam string
+		IsViolation  bool
+		ExampleName  string
+		DocsContext  string
 	}{
-		{"src1 dst1 " /**/, true},
-		{"src1      dst1/", true},
-		{"src1 src2 dst1 ", false},
-		{"src1 src2 dst1/", true},
-		{"-chmod=7 src2 dst1/", true},
+		{"src1 dst1 " /**/, true,  "COPY src1 dst1", "FROM golang:1.15\nCOPY {{ .CommandParam }}"},
+		{"src1      dst1/", true,  "COPY src1      dst1", "FROM golang:1.15\nCOPY {{ .CommandParam }}"},
+		{"src1 src2 dst1 ", false, "COPY src1 src2 dst1", "FROM golang:1.15\nCOPY {{ .CommandParam }}"},
+		{"src1 src2 dst1/", true,  "COPY src1 src2 dst1/", "FROM golang:1.15\nCOPY {{ .CommandParam }}"},
+		{"-chmod=7 src2 dst1/", true, "COPY -chmod=7 src1 dst1/", "FROM golang:1.15\nCOPY {{ .CommandParam }}"},
 	}
+
+	RuleSet.RegisterTestCaseDocs("CPY004", testCases)
 
 	for _, testCase := range testCases {
 		testCase := testCase
 
-		t.Run(testCase.commandParam, func(t *testing.T) {
+		t.Run(testCase.CommandParam, func(t *testing.T) {
 			t.Parallel()
 
 			command := &instructions.CopyCommand{
-				SourcesAndDest: strings.Fields(testCase.commandParam),
+				SourcesAndDest: strings.Fields(testCase.CommandParam),
 				From:           "",
 				Chown:          "",
 				Chmod:          "",
@@ -49,7 +54,7 @@ func TestValidateCpy004(t *testing.T) {
 
 			result := !RuleSet.ValidateCpy004(command).IsViolated()
 
-			assert.Equal(t, testCase.expected, result)
+			assert.Equal(t, testCase.IsViolation, result)
 		})
 	}
 }

@@ -58,7 +58,6 @@ func TestValidateStl001(t *testing.T) { // nolint:funlen
 	}
 
 	RuleSet.RegisterTestCaseDocs("STL001", testCases)
-	RuleSet.GenerateRuleDocs()
 
 	for _, testCase := range testCases {
 		testCase := testCase
