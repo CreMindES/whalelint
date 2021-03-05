@@ -261,7 +261,7 @@ type PublishDiagnosticsParams struct {
 	/**
 	 * The URI for which diagnostic information is reported.
 	 */
-	URI DocumentURI `json:"URI"`
+	URI DocumentURI `json:"uri"`
 	/**
 	 * Optional the version number of the document the diagnostics are published for.
 	 *
