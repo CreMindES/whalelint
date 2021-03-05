@@ -87,6 +87,11 @@ func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationRes
 					validationResult := rule.Validate(workdirCommand)
 					ruleValidationResultArray = append(ruleValidationResultArray, validationResult)
 				}
+			} else if maintainerCommand, ok := command.(*instructions.MaintainerCommand); ok {
+				for _, rule := range RuleSet.GetRulesForAstElement(maintainerCommand) {
+					validationResult := rule.Validate(maintainerCommand)
+					ruleValidationResultArray = append(ruleValidationResultArray, validationResult)
+				}
 			} else {
 				log.Error("Unhandled Command!")
 			}
