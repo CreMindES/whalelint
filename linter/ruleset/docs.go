@@ -1,3 +1,5 @@
+// +build ruledocs
+
 package ruleset
 
 import (
@@ -5,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"path"
 	"reflect"
 	"regexp"
 	"strings"
@@ -39,13 +42,13 @@ var ruleDocMap = RuleDocMap{} // nolint:gochecknoglobals
 func ExtractDocFieldsFromTestCase(testDocsReflect reflect.Value, parent reflect.Value, i int) (TestCaseDocs, error) {
 	// Parse common TestCaseDocs <-> Rule lint TestCase struct fields
 	docsContextReflectValue := testDocsReflect.FieldByName("DocsContext")
-	exampleNameReclectValue := testDocsReflect.FieldByName("ExampleName")
+	exampleNameReflectValue := testDocsReflect.FieldByName("ExampleName")
 	isViolationReflectValue := testDocsReflect.FieldByName("IsViolation")
 
 	// Check success/validity of fields
 	if !docsContextReflectValue.IsValid() ||
 		!isViolationReflectValue.IsValid() ||
-		!exampleNameReclectValue.IsValid() {
+		!exampleNameReflectValue.IsValid() {
 		// TODO: error
 		err := &reflect.ValueError{}
 
@@ -54,7 +57,7 @@ func ExtractDocFieldsFromTestCase(testDocsReflect reflect.Value, parent reflect.
 
 	// Convert to actual types from reflect.Value
 	docsContext := docsContextReflectValue.String()
-	exampleName := exampleNameReclectValue.String()
+	exampleName := exampleNameReflectValue.String()
 	isViolation := isViolationReflectValue.Bool()
 
 	// Run template engine
@@ -125,44 +128,34 @@ func RegisterTestCaseDocs(ruleID string, testDocsIntrfc interface{}) {
 }
 
 func GenerateRuleDocs() {
-	folder := "./" // ./linter/ruleset/
-
-	// docsTemplate, err := template.ParseFiles(folder + "docs.gotemplate")
-	// if err != nil {
-	// 	// TODO: err
-	// 	Log.Error(err)
-	// }
+	folder := "../../docs/rule/set"
 
 	docsTemplate := template.Must(
 		template.New("docs.gotemplate").Funcs(sprig.FuncMap()).ParseGlob("docs.gotemplate"),
 	)
 
 	for ruleID, ruleDoc := range ruleDocMap {
-		if ruleID == "STL001" || ruleID == "CPY001" || ruleID == "CPY006" {
-			f, err := os.Create(folder + strings.ToLower(ruleID) + ".md")
-			if err != nil {
-				return
-			}
+		f, err := os.Create(path.Join(folder, strings.ToLower(ruleID) + ".md"))
+		if err != nil {
+			return
+		}
 
-			w := bufio.NewWriter(f)
+		w := bufio.NewWriter(f)
 
-			// Run the template engine
-			err = docsTemplate.Execute(w, ruleDoc)
-			if err != nil {
-				Log.Error(err)
-			}
+		// Run the template engine
+		err = docsTemplate.Execute(w, ruleDoc)
+		if err != nil {
+			Log.Error(err)
+		}
 
-			// Flush writer
-			if errFlush := w.Flush(); errFlush != nil {
-				Log.Error(errFlush)
-			}
+		// Flush writer
+		if errFlush := w.Flush(); errFlush != nil {
+			Log.Error(errFlush)
+		}
 
-			// Close file
-			if errClose := f.Close(); errClose != nil {
-				Log.Error(errClose)
-			}
-
-			break
+		// Close file
+		if errClose := f.Close(); errClose != nil {
+			Log.Error(errClose)
 		}
 	}
 }
