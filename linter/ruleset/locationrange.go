@@ -3,6 +3,7 @@ package ruleset
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
@@ -145,9 +146,80 @@ func ParseLocationFromRawParser(str string, window []parser.Range) LocationRange
 	)
 }
 
+func ParseLocationSliceFromRawParser(strSlice []string, window []parser.Range) []LocationRange {
+	if !Parser.RawParser.IsInitialized() {
+		result := make([]LocationRange, len(strSlice))
+
+		for i := 0; i < len(strSlice); i++ {
+			result[i] = CopyLocationRange(window)
+		}
+
+		return result
+	}
+
+	return NewLocationFrom4IntSlice(
+		Parser.RawParser.StringSliceLocation(strSlice, window),
+	)
+}
+
 func NewLocationFrom4Int(locationRange [4]int) LocationRange {
 	return LocationRange{
 		start: &Location{locationRange[0], locationRange[1]},
 		end:   &Location{locationRange[2], locationRange[3]},
 	}
+}
+
+func NewLocationFrom4IntSlice(locationRangeSlice [][4]int) []LocationRange {
+	result := make([]LocationRange, len(locationRangeSlice))
+
+	for i, locationRange := range locationRangeSlice {
+		result[i] = LocationRange{
+			start: &Location{locationRange[0], locationRange[1]},
+			end:   &Location{locationRange[2], locationRange[3]},
+		}
+	}
+
+	return result
+}
+
+func UnionOfLocationRanges(locationRangeSlice []LocationRange) LocationRange {
+	// TODO deep copy
+	SortLocationRanges(locationRangeSlice)
+
+	return LocationRange{
+		start: &Location{
+			lineNumber: locationRangeSlice[0].start.lineNumber,
+			charNumber: locationRangeSlice[0].start.charNumber,
+		},
+		end: &Location{
+			lineNumber: locationRangeSlice[len(locationRangeSlice)-1].end.lineNumber,
+			charNumber: locationRangeSlice[len(locationRangeSlice)-1].end.charNumber,
+		},
+	}
+}
+
+func SortLocationRanges(locationRangeSlice []LocationRange) {
+	sortFunc := func(i, j int) bool {
+		// compare by 1st variable
+		if locationRangeSlice[i].start.lineNumber != locationRangeSlice[j].start.lineNumber {
+			return locationRangeSlice[i].start.lineNumber < locationRangeSlice[j].start.lineNumber
+		}
+		// compare by 2nd variable
+		if locationRangeSlice[i].start.charNumber != locationRangeSlice[j].start.charNumber {
+			return locationRangeSlice[i].start.charNumber < locationRangeSlice[j].start.charNumber
+		}
+		// compare by 3rd variable
+		if locationRangeSlice[i].end.lineNumber != locationRangeSlice[j].end.lineNumber {
+			return locationRangeSlice[i].end.lineNumber < locationRangeSlice[j].end.lineNumber
+		}
+		// compare by 4th variable
+		if locationRangeSlice[i].end.charNumber != locationRangeSlice[j].end.charNumber {
+			return locationRangeSlice[i].end.charNumber < locationRangeSlice[j].end.charNumber
+		}
+
+		// all equal
+		return false
+	}
+
+	sort.Slice(locationRangeSlice, sortFunc)
 }

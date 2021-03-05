@@ -10,6 +10,45 @@ import (
 	Parser "github.com/cremindes/whalelint/parser"
 )
 
+func TestBashCommand_OptionKeyList(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		optionMap      map[string]string
+		optionKeySlice []string
+		name           string
+	}{
+		{
+			optionMap:      map[string]string{"foo": "bar"},
+			optionKeySlice: []string{"foo"},
+			name:           "Key-value option --foo=bar.",
+		},
+		{
+			optionMap:      map[string]string{"foo": ""},
+			optionKeySlice: []string{"foo"},
+			name:           "Key-value option --foo.",
+		},
+		{
+			optionMap:      map[string]string{"foo": "bar", "x": ""},
+			optionKeySlice: []string{"foo", "x"},
+			name:           "Key-value option --foo=bar -x.",
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase := testCase
+
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			bashCommand := Parser.NewBashCommand(map[string]string{}, "", "", testCase.optionMap,
+				map[string]string{}, false, "")
+
+			assert.Equal(t, testCase.optionKeySlice, bashCommand.OptionKeyList())
+		})
+	}
+}
+
 // TestSplitBashChainLex tests the SplitBashChainLex function's ability to properly split the chained raw lex string
 // into a set of bashCommands and a set of delimiters.
 //
@@ -23,13 +62,14 @@ import (
 func TestSplitBashChainLex(t *testing.T) {
 	t.Parallel()
 
+	// nolint:gofmt,gofumpt,goimports
 	testCases := []struct {
 		name          string
 		rawStr        string
 		length        int
 		delimiterList []string
 	}{
-		{"simple command" , "echo \"ok\""                  , 1, nil}, // nolint:gofmt,gofumpt,goimports
+		{"simple command" , "echo \"ok\""                  , 1, nil},
 		{"two commands"   , "echo \"ok\" && echo --version", 2, []string{"&&"}},
 		{"complex command", "echo \"ok\" ; || date && date", 4, []string{";", "||", "&&"}},
 	}
@@ -97,6 +137,32 @@ func TestParseBashCommand(t *testing.T) { // nolint:funlen
 				map[string]string{},
 				false,
 				"",
+			),
+		},
+		{
+			"pip install pytorch command",
+			[]string{"pip", "install", "pytorch"},
+			Parser.NewBashCommand(
+				map[string]string{},
+				"pip",
+				"install",
+				map[string]string{},
+				map[string]string{"pytorch": ""},
+				false,
+				"pip install pytorch",
+			),
+		},
+		{
+			"pip install pytorch command",
+			[]string{"pip", "install", "pytorch", "pytorch-lightning"},
+			Parser.NewBashCommand(
+				map[string]string{},
+				"pip",
+				"install",
+				map[string]string{},
+				map[string]string{"pytorch": "", "pytorch-lightning": ""},
+				false,
+				"pip install pytorch pytorch-lightning",
 			),
 		},
 	}
