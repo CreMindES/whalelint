@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	Linter "github.com/cremindes/whalelint/linter"
+	Lsp "github.com/cremindes/whalelint/lsp"
 	Parser "github.com/cremindes/whalelint/parser"
 	Report "github.com/cremindes/whalelint/report"
 	Utils "github.com/cremindes/whalelint/utils"
@@ -34,6 +35,7 @@ Commands:
 
 type WhaleLintCLI struct {
 	Lint    LintCommand    `kong:"cmd,help='run linter.'"`
+	Lsp     LspCommand     `kong:"cmd,help='run language server'"`
 	Version VersionCommand `kong:"cmd,help='show version.'"`
 
 	Config  string         `kong:"help='config file path NOTIMPLEMENTED'"` // nolint:gofmt,gofumpt,goimports
@@ -122,6 +124,17 @@ func (lintCommand *LintCommand) Run() error {
 	}
 
 	return nil
+}
+
+type LspCommand struct {
+	Port int `help:"Port number" default:"18888"`
+}
+
+// Run starts the Language Server.
+func (lspCommand *LspCommand) Run() error {
+	err := Lsp.Serve(lspCommand.Port)
+
+	return fmt.Errorf("%w", err)
 }
 
 type VersionCommand struct{}
