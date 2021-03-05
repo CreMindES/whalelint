@@ -54,6 +54,10 @@ func RemoveExtraSpaces(str string, trim bool) string {
 	return result
 }
 
+func SliceContains(arr []string, patternInterface interface{}) bool {
+	return FindIndexOfSliceElement(arr, patternInterface) != -1
+}
+
 // FindIndexOfSliceElement returns the fist index of the slice element that matched with the pattern.
 // Pattern can be a string or a string slice. In the latter case the index of the match of the first element with any
 // matching pattern will be returned.
@@ -133,6 +137,49 @@ func SplitKeyValue(s string, r rune) (string, string) {
 	return s[0:idx], s[idx+1:]
 }
 
+func FilterMapByKey(kv map[string]string, f func(string) bool) []string {
+	return filterMap(kv, f, true, false)
+}
+
+func FilterMapByValue(kv map[string]string, f func(string) bool) []string {
+	return filterMap(kv, f, false, true)
+}
+
+func FilterMapKeys(kv map[string]string, f func(string) bool) []string {
+	return filterMap(kv, f, true, true)
+}
+
+func FilterMapValues(kv map[string]string, f func(string) bool) []string {
+	return filterMap(kv, f, false, false)
+}
+
+func filterMap(kv map[string]string, f func(string) bool, byKeyOrValue bool, keyOrValue bool) []string {
+	result := make([]string, 0)
+
+	filterOut := ""
+	sortBy := ""
+
+	for k, v := range kv {
+		if byKeyOrValue {
+			sortBy = k
+		} else {
+			sortBy = v
+		}
+
+		if keyOrValue {
+			filterOut = k
+		} else {
+			filterOut = v
+		}
+
+		if f(sortBy) {
+			result = append(result, filterOut)
+		}
+	}
+
+	return result
+}
+
 /* Unix stuff. */
 
 func IsUnixPortValid(portParam interface{}) bool {
@@ -167,6 +214,8 @@ func IsUnixPortValid(portParam interface{}) bool {
 
 	return false
 }
+
+/* File */
 
 func ReadFileContents(filePath string) (string, error) {
 	// TODO: migrate to 1.16 os.ReadFile

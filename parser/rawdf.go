@@ -77,3 +77,19 @@ func (r *RawDockerfileParser) StringLocation(str string, window []parser.Range) 
 
 	return [4]int{-1, -1, -1, -1}
 }
+
+func (r *RawDockerfileParser) StringSliceLocation(strSlice []string, window []parser.Range) [][4]int {
+	if len(strSlice) == 0 {
+		w := window[0]
+
+		return [][4]int{{w.Start.Line, w.Start.Character, w.End.Line, w.End.Character}}
+	}
+
+	result := make([][4]int, len(strSlice))
+
+	for i, str := range strSlice {
+		result[i] = r.StringLocation(str, window)
+	}
+
+	return result
+}

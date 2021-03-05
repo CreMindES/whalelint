@@ -3,6 +3,7 @@
 package parser
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types/strslice"
@@ -63,6 +64,23 @@ func (bashCommand *BashCommand) ArgMap() map[string]string {
 // OptionList returns the options passed to the binary and/or the subcommand, like --yes.
 func (bashCommand *BashCommand) OptionList() map[string]string {
 	return bashCommand.optionMap
+}
+
+// OptionKeyList returns the options passed to the binary and/or the subcommand as a slice, but not the values.
+func (bashCommand *BashCommand) OptionKeyList() []string {
+	keySlice := make([]string, len(bashCommand.optionMap))
+	i := 0
+
+	for k := range bashCommand.optionMap {
+		keySlice[i] = k
+		i++
+	}
+
+	// make sure that the order is reproducible
+	// which also makes the testing easier as a bonus
+	sort.Strings(keySlice)
+
+	return keySlice
 }
 
 // HasSudo tells whether the command has a sudo modifier in front of it.
@@ -141,6 +159,7 @@ func ParseBashCommandChain(command interface{}) BashCommandChain {
 
 // ParseBashCommand parses a bash command from a []string format.
 // The latter is currently obtained by github.com/google/shlex::Split.
+// nolint:funlen
 func ParseBashCommand(bashCommandLex []string) BashCommand {
 	bashCommand := BashCommand{
 		envVars:   make(map[string]string),
@@ -150,8 +169,17 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 
 	// Not intended as a full list, just mostly what the rules are using, so keep this in mind while debugging!
 	subCommandMap := map[string][]string{
+		"apt":     {"clean", "install", "remove", "update", "upgrade", "dist-upgrade"},
 		"apt-get": {"clean", "install", "remove", "update", "upgrade", "dist-upgrade"},
+		"snap":    {"install", "remove", "refresh", "download"},
+		"yum":     {"clean", "install", "remove", "update", "upgrade", "distro-sync", "dsync", "downgrade"},
+		"apk":     {"cache", "add", "del", "update", "upgrade"},
+		"npm":     {"install", "i", "update", "list", "ls", "view", "outdated"},
 		"pip":     {"install", "freeze", "list", "download"},
+		"conda":   {"clean", "install", "uninstall", "update", "config", "active", "deactivate", "env"},
+		"gem":     {"cleanup", "install", "uninstall", "update", "build", "push", "list"},
+		"zypper":  {"install", "in", "remove", "rm", "update", "up", "refresh", "addrepo"},
+		"dnf":     {"clean", "install", "remove", "update", "upgrade", "list", "distro-sync", "dsync", "downgrade"},
 	}
 
 	if len(bashCommandLex) == 0 {
@@ -185,16 +213,16 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 
 	// options, everything that starts with a - or --
 	// TODO: option values
-	lastOptionIndex := 0
-	for i, lexItem := range bashCommandLex { //nolint:wsl
+	for _, lexItem := range bashCommandLex {
 		if strings.HasPrefix(lexItem, "-") {
 			bashCommand.optionMap[lexItem] = ""
-			lastOptionIndex = i
+		} else {
+			break
 		}
 	}
 
-	if len(bashCommandLex)-1 > lastOptionIndex {
-		bashCommandLex = bashCommandLex[lastOptionIndex+1:]
+	if len(bashCommand.optionMap) > 0 {
+		bashCommandLex = bashCommandLex[len(bashCommand.optionMap):]
 	}
 
 	// args
