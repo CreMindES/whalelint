@@ -24,9 +24,9 @@ Commands:
 	--port
     -c, --config
   lint [default]
-    - | --output [textsummary, json]
-    --short-summary? [mutually exclusive with output?]
-    --return-value [program,lint]
+    --format [json, summary]
+    --return-value [app, bool, num]
+    --verbosity [short, normal, high]
     file list
 	-c, --config
   version
@@ -36,7 +36,7 @@ type WhaleLintCLI struct {
 	Lint    LintCommand    `kong:"cmd,help='run linter.'"`
 	Version VersionCommand `kong:"cmd,help='show version.'"`
 
-	Config  string         `kong:"help='config file path'"` // nolint:gofmt,gofumpt,goimports
+	Config  string         `kong:"help='config file path NOTIMPLEMENTED'"` // nolint:gofmt,gofumpt,goimports
 }
 
 func (*WhaleLintCLI) Options() []kong.Option {
@@ -56,12 +56,12 @@ func (*WhaleLintCLI) Options() []kong.Option {
 	}
 }
 
-type LintCommand struct { // nolint:maligned
-	Format       string   `kong:"help='TODO',default:'summary',enum:'json,summary'"`
-	NoColor      bool     `kong:"help='No color output'"`
-	Paths        []string `kong:"arg,required,help:'Paths to remove.',type:'path'"`
-	ReturnValue  string   `kong:"help='Return value TODO'"`
-	ShortSummary bool     `kong:"help='Print only a short summary.'"`
+type LintCommand struct {
+	Format      string   `kong:"help='Report format [${enum}].',default='summary',enum='json, summary'"`
+	NoColor     bool     `kong:"help='No color output'"`
+	Paths       []string `kong:"arg,required,help='Path to Dockerfile.',type:'path'"`
+	ReturnValue string   `kong:"help='Set return value to one of [${enum}] NOT_IMPLEMENTED.',default='app',enum='app, bool, num'"` // nolint:lll
+	Verbosity   string   `kong:"help='Verbosity level [${enum}].',default='normal',enum='normal, short'"`
 }
 
 func (lintCommand *LintCommand) Run() error {
@@ -103,10 +103,20 @@ func (lintCommand *LintCommand) Run() error {
 	case "json":
 		Report.PrintResultAsJSON(ruleValidationResultArray, os.Stdout)
 	case "summary":
+		var verbosity Report.VerbosityLevel
+
+		switch lintCommand.Verbosity {
+		case "high":
+			verbosity = Report.VerbosityHigh
+		case "normal":
+			verbosity = Report.VerbosityNormal
+		case "short":
+			verbosity = Report.VerbosityShort
+		}
+
 		options := Report.SummaryOption{
-			NoColor:      lintCommand.NoColor,
-			ShortSummary: lintCommand.ShortSummary,
-			Verbosity:    Report.VerbosityNormal,
+			NoColor:   lintCommand.NoColor,
+			Verbosity: verbosity,
 		}
 		Report.PrintSummary(ruleValidationResultArray, os.Stdout, options)
 	}
