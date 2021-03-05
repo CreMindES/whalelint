@@ -1,0 +1,20 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "files.exclude": {
+        "out": false // set this to true to hide the "out" folder with the compiled JS files
+    },
+    "search.exclude": {
+        "out": true // set this to false to include "out" folder in search results
+    },
+    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+    "typescript.tsc.autoDetect": "off",
+    "docker.languageserver.diagnostics.instructionHealthcheckMultiple": "ignore",
+    "docker.languageserver.diagnostics.instructionCmdMultiple": "ignore",
+    "docker.languageserver.diagnostics.deprecatedMaintainer": "ignore",
+    "docker.languageserver.diagnostics.directiveCasing": "ignore",
+    "docker.languageserver.diagnostics.emptyContinuationLine": "ignore",
+    "docker.languageserver.diagnostics.instructionCasing": "ignore",
+    "docker.languageserver.diagnostics.instructionEntrypointMultiple": "ignore",
+    "docker.languageserver.diagnostics.instructionJSONInSingleQuotes": "ignore",
+    "docker.languageserver.diagnostics.instructionWorkdirRelative": "ignore",
+}
