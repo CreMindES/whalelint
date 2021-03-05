@@ -7,6 +7,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/alecthomas/kong v0.2.15
 	github.com/docker/docker v20.10.0-beta1.0.20201110211921-af34b94a78a1+incompatible
+	github.com/fatih/color v1.9.0
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/huandu/xstrings v1.3.2 // indirect
