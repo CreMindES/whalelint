@@ -90,6 +90,15 @@ func TestValidateCpy006(t *testing.T) {
                           FROM {{ .StageBase }}
                           COPY --from {{ .CopyFrom }}`,
 		},
+		{
+			IsViolation: false,
+			ExampleName: "Simple COPY src dst",
+			StageName: "", StageBase: "foo:latest", CopyFrom: "",
+			DocsContext: `FROM golang:1.15 as {{ .StageName }}
+                          RUN go build app
+                          FROM {{ .StageBase }}
+                          COPY src dst`,
+		},
 	}
 
 	RuleSet.RegisterTestCaseDocs("CPY006", testCases)
