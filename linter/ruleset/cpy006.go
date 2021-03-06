@@ -14,8 +14,8 @@ func ValidateCpy006(stage instructions.Stage) RuleValidationResult {
 
 	for _, command := range stage.Commands {
 		if copyCommand, ok := command.(*instructions.CopyCommand); ok {
-			if copyCommand.From == stage.Name || copyCommand.From == stage.BaseName ||
-				Utils.MatchDockerImageNames(copyCommand.From, stage.BaseName) {
+			if len(copyCommand.From) > 0 && (copyCommand.From == stage.Name || copyCommand.From == stage.BaseName ||
+				Utils.MatchDockerImageNames(copyCommand.From, stage.BaseName)) {
 				result.SetViolated()
 				result.LocationRange = ParseLocationFromRawParser(copyCommand.From, copyCommand.Location())
 			}

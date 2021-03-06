@@ -140,7 +140,7 @@ func (lspCommand *LspCommand) Run() error {
 type VersionCommand struct{}
 
 func (versionCommand *VersionCommand) Run(k *kong.Context) error {
-	version := "v0.0.1"
+	version := "v0.0.2"
 	k.Printf("%s", version)
 
 	return nil
