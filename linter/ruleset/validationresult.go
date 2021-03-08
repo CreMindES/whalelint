@@ -35,7 +35,7 @@ func (ruleValidationResult *RuleValidationResult) MarshalJSON() ([]byte, error) 
 	}{
 		Rule:          ruleValidationResult.rule,
 		IsViolated:    ruleValidationResult.isViolated,
-		Message:       ruleValidationResult.message,
+		Message:       ruleValidationResult.Message(),
 		LocationRange: ruleValidationResult.LocationRange,
 	})
 }

@@ -27,7 +27,7 @@ func TestRuleValidationResult_MarshalJSON(t *testing.T) {
 	mockRule := newMockRule()
 	mockLoc := newMockLocation()
 
-	referenceRuleValidationResult := RuleSet.NewRuleValidationResult(mockRule, false, "", mockLoc)
+	referenceRuleValidationResult := RuleSet.NewRuleValidationResult(mockRule, false, "mockMessage", mockLoc)
 	var duplicateRuleValidationResult RuleSet.RuleValidationResult // nolint:wsl
 
 	// serialize
