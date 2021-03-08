@@ -141,25 +141,31 @@ func ParseLocationFromRawParser(str string, window []parser.Range) LocationRange
 		return CopyLocationRange(window)
 	}
 
-	return NewLocationFrom4Int(
+	location := NewLocationFrom4Int(
 		Parser.RawParser.StringLocation(str, window),
 	)
+
+	if location.Start().LineNumber() == -1 {
+		return CopyLocationRange(window)
+	}
+
+	return location
 }
 
 func ParseLocationSliceFromRawParser(strSlice []string, window []parser.Range) []LocationRange {
 	if !Parser.RawParser.IsInitialized() {
-		result := make([]LocationRange, len(strSlice))
-
-		for i := 0; i < len(strSlice); i++ {
-			result[i] = CopyLocationRange(window)
-		}
-
-		return result
+		return []LocationRange{CopyLocationRange(window)}
 	}
 
-	return NewLocationFrom4IntSlice(
+	location := NewLocationFrom4IntSlice(
 		Parser.RawParser.StringSliceLocation(strSlice, window),
 	)
+
+	if location[0].Start().LineNumber() == -1 {
+		return []LocationRange{CopyLocationRange(window)}
+	}
+
+	return location
 }
 
 func NewLocationFrom4Int(locationRange [4]int) LocationRange {
