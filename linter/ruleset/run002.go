@@ -63,6 +63,10 @@ func ValidateRun002(runCommand *instructions.RunCommand) RuleValidationResult {
 			result.message = "Fedora/RMP"
 		}
 		if Parser.IsPythonPackageInstall(bashCommand) {
+			// case pip install -r [requirement.txt]
+			if Utils.SliceContains(bashCommand.OptionKeyList(), []string{"-r", "--requirement"}) {
+				continue
+			}
 			packageWithoutVersionList = Utils.FilterMapByValue(bashCommand.ArgMap(), filterFunc)
 			result.message = "Python"
 		}

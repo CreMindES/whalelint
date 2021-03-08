@@ -56,6 +56,13 @@ func TestValidateRun002(t *testing.T) {
 			DocsContext: "FROM ubuntu:20.04\nRUN {{ .CommandStr }}",
 		},
 		{
+			CommandStr:  "pip install --no-cache-dir -r requirements.txt",
+			IsViolation: false,
+			ExampleName: "Install pip packages from requirements file.",
+			DocsContext: "FROM ubuntu:20.04\nRUN {{ .CommandStr }}",
+		},
+
+		{
 			CommandStr:  "date",
 			IsViolation: false,
 			ExampleName: "Unrelated command.",
