@@ -108,7 +108,7 @@ func parseFromText(str string) []instructions.Stage {
 	reader := strings.NewReader(str)
 
 	dockerfile, err := parser.Parse(reader)
-	if err != nil {
+	if err != nil || dockerfile == nil {
 		Log.Error("Cannot parse Dockerfile", err)
 	}
 
