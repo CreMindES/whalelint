@@ -98,7 +98,7 @@ func ValidateRun002(runCommand *instructions.RunCommand) RuleValidationResult {
 			result.message = fmt.Sprintf("%s \"%s\" %s no version specified.",
 				english.PluralWord(len(packageWithoutVersionList), "Package", ""),
 				packageWithoutVersionListStr,
-				english.PluralWord(len(packageWithoutVersionList), "has", ""),
+				english.PluralWord(len(packageWithoutVersionList), "has", "have"),
 			)
 		} else {
 			result.message = fmt.Sprintf("%d %s %s no version specified.",

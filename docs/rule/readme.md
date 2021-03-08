@@ -1,7 +1,7 @@
 # WhaleLint Rules
 
 <p align="center">
-  <img width="500px" src="ruletable/ruletable.png" />
+  <img width="500px" src="https://user-images.githubusercontent.com/5306361/110181292-bfa60280-7e0b-11eb-8437-d9ec9c45df62.png" />
 </p>
 
 ## Description
