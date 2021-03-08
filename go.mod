@@ -13,7 +13,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
-	github.com/moby/buildkit v0.8.1
+	github.com/moby/buildkit v0.8.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.5.1
 	github.com/zoumo/goset v0.2.0
