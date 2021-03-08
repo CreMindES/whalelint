@@ -51,8 +51,10 @@ func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationRes
 
 				// TODO: better solution than this workaround
 				// register stage arg value
-				value := *argCommand.Args[0].Value
-				argMap[argCommand.Args[0].Key] = value[1 : len(value)-1]
+				if argCommand.Args[0].Value != nil {
+					value := *argCommand.Args[0].Value
+					argMap[argCommand.Args[0].Key] = value[1 : len(value)-1]
+				}
 			} else if cmdCommand, ok := command.(*instructions.CmdCommand); ok {
 				for _, rule := range RuleSet.GetRulesForAstElement(cmdCommand) {
 					validationResult := rule.Validate(cmdCommand)
