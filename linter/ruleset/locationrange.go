@@ -92,10 +92,10 @@ func (locationRange *LocationRange) UnmarshalJSON(data []byte) error {
 }
 
 func LocationRangeFromCommand(command instructions.Command) LocationRange {
-	return CopyLocationRange(command.Location())
+	return BKRangeSliceToLocationRange(command.Location())
 }
 
-func CopyLocationRange(parserRange []parser.Range) LocationRange {
+func BKRangeSliceToLocationRange(parserRange []parser.Range) LocationRange {
 	if parserRange == nil {
 		return LocationRange{
 			start: &Location{
@@ -138,7 +138,7 @@ func NewLocationRange(startLine, startChar, endLine, endChar int) LocationRange 
 
 func ParseLocationFromRawParser(str string, window []parser.Range) LocationRange {
 	if !Parser.RawParser.IsInitialized() {
-		return CopyLocationRange(window)
+		return BKRangeSliceToLocationRange(window)
 	}
 
 	location := NewLocationFrom4Int(
@@ -146,7 +146,7 @@ func ParseLocationFromRawParser(str string, window []parser.Range) LocationRange
 	)
 
 	if location.Start().LineNumber() == -1 {
-		return CopyLocationRange(window)
+		return BKRangeSliceToLocationRange(window)
 	}
 
 	return location
@@ -154,7 +154,7 @@ func ParseLocationFromRawParser(str string, window []parser.Range) LocationRange
 
 func ParseLocationSliceFromRawParser(strSlice []string, window []parser.Range) []LocationRange {
 	if !Parser.RawParser.IsInitialized() {
-		return []LocationRange{CopyLocationRange(window)}
+		return []LocationRange{BKRangeSliceToLocationRange(window)}
 	}
 
 	location := NewLocationFrom4IntSlice(
@@ -162,7 +162,7 @@ func ParseLocationSliceFromRawParser(strSlice []string, window []parser.Range) [
 	)
 
 	if location[0].Start().LineNumber() == -1 {
-		return []LocationRange{CopyLocationRange(window)}
+		return []LocationRange{BKRangeSliceToLocationRange(window)}
 	}
 
 	return location
