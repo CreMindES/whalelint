@@ -272,6 +272,10 @@ func GetDockerfileAst(filePathString string) ([]instructions.Stage, []instructio
 //   - there is no more child, in which case it returns an empty stage.
 func ParseDockerfileInstructionsSafely(dockerfile *parser.Result, fileHandle io.ReadSeeker) ([]instructions.Stage,
 	[]instructions.ArgCommand) {
+	if dockerfile == nil {
+		return []instructions.Stage{}, []instructions.ArgCommand{}
+	}
+
 	var (
 		stageList []instructions.Stage
 		metaArgs  []instructions.ArgCommand

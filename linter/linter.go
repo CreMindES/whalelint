@@ -16,7 +16,11 @@ type Linter struct{}
 // nolint:nestif, funlen, gocognit
 /* Validate each Dockerfile AST entry against rules in ruleset package. */
 func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationResult {
-	var ruleValidationResultArray []RuleSet.RuleValidationResult // nolint:prealloc
+	ruleValidationResultArray := make([]RuleSet.RuleValidationResult, 0)
+
+	if len(stageList) == 0 {
+		return ruleValidationResultArray
+	}
 
 	// Call Dockerfile AST level validators
 	stageListRuleSet := RuleSet.GetRulesForAstElement(stageList)
