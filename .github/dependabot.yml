@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    assignees:
+      - "CreMindES"
+    reviewers:
+      - "CreMindES"
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  # VSCode extension
+  - package-ecosystem: "npm"
+    directory: "/plugins/vscode"
+    schedule:
+      interval: "daily"
+    assignees:
+      - "CreMindES"
+    reviewers:
+      - "CreMindES"
+
