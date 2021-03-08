@@ -35,6 +35,8 @@ func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationRes
 			ruleValidationResultArray = append(ruleValidationResultArray, validationResult)
 		}
 
+		argMap := make(map[string]string)
+
 		for _, command := range stage.Commands {
 			// Call Dockerfile Command level validators, but first filter them by type
 			if argCommand, ok := command.(*instructions.ArgCommand); ok {
@@ -42,6 +44,11 @@ func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationRes
 					validationResult := rule.Validate(argCommand)
 					ruleValidationResultArray = append(ruleValidationResultArray, validationResult)
 				}
+
+				// TODO: better solution than this workaround
+				// register stage arg value
+				value := *argCommand.Args[0].Value
+				argMap[argCommand.Args[0].Key] = value[1 : len(value)-1]
 			} else if cmdCommand, ok := command.(*instructions.CmdCommand); ok {
 				for _, rule := range RuleSet.GetRulesForAstElement(cmdCommand) {
 					validationResult := rule.Validate(cmdCommand)
@@ -59,6 +66,8 @@ func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationRes
 				}
 			} else if exposeCommand, ok := command.(*instructions.ExposeCommand); ok {
 				for _, rule := range RuleSet.GetRulesForAstElement(exposeCommand) {
+					ResolveSliceFromArgMap(exposeCommand.Ports, argMap)
+
 					validationResult := rule.Validate(exposeCommand)
 					ruleValidationResultArray = append(ruleValidationResultArray, validationResult)
 				}
@@ -99,4 +108,20 @@ func (l *Linter) Run(stageList []instructions.Stage) []RuleSet.RuleValidationRes
 	}
 
 	return ruleValidationResultArray
+}
+
+func ResolveSliceFromArgMap(strSlice []string, argMap map[string]string) {
+	for i, str := range strSlice {
+		strSlice[i] = ResolveValueFromArgMap(str, argMap)
+	}
+}
+
+func ResolveValueFromArgMap(str string, argMap map[string]string) string {
+	for key, value := range argMap {
+		if "$"+key == str || "${"+key+"}" == str {
+			return value
+		}
+	}
+
+	return str
 }
