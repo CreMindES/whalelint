@@ -1,8 +1,8 @@
 {
   "name": "whalelint",
   "displayName": "WhaleLint",
-  "description": "Dockerfile linter writtern in Go.",
-  "version": "0.0.4",
+  "description": "Dockerfile linter written in Go.",
+  "version": "0.0.5",
   "publisher": "TamasGBarna",
   "author": {
     "name": "Tamás G. Barna"

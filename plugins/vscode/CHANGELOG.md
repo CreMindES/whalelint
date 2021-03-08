@@ -1,9 +1,14 @@
 # Change Log
 
+## v0.0.5 - 8th March 2021
+
+- Bug fix:
+  - Runtime error on ARG without value | [GitHub Issue #46](https://github.com/CreMindES/whalelint/issues/46)
+
 ## v0.0.4 - 8th March 2021
 
 - Bug fixes:
-  - LSP crash on empty Dockerfile |  [GitHub Issue #42](https://github.com/CreMindES/whalelint/issues/42)
+  - LSP crash on empty Dockerfile | [GitHub Issue #42](https://github.com/CreMindES/whalelint/issues/42)
   - LSP crash during live editing on RUN command
 
 ## v0.0.3 - 8th March 2021
