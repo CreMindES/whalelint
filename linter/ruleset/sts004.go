@@ -10,7 +10,7 @@ var _ = NewRule("STS004", "There should only be 1 CMD and/or ENTRYPOINT command.
 	ValWarning, ValidateSts004)
 
 func ValidateSts004(stage instructions.Stage) RuleValidationResult {
-	result := RuleValidationResult{isViolated: false, LocationRange: CopyLocationRange(stage.Location)}
+	result := RuleValidationResult{isViolated: false, LocationRange: BKRangeSliceToLocationRange(stage.Location)}
 
 	cmdCommands := filter.Choose(stage.Commands, func(c instructions.Command) bool { return c.Name() == "cmd" })
 	entrypointCommands := filter.Choose(stage.Commands, func(c instructions.Command) bool {

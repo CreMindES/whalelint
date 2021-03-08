@@ -9,7 +9,7 @@ var _ = NewRule("STS003", "Platform should be specified in build tool and not FR
 	ValWarning, ValidateSts003)
 
 func ValidateSts003(stage instructions.Stage) RuleValidationResult {
-	result := RuleValidationResult{isViolated: false, LocationRange: CopyLocationRange(stage.Location)}
+	result := RuleValidationResult{isViolated: false, LocationRange: BKRangeSliceToLocationRange(stage.Location)}
 
 	result.SetViolated(len(stage.Platform) > 0)
 
