@@ -67,7 +67,7 @@ func TestVersionCommand_Run(t *testing.T) {
 	err = ctx.Run()
 	assert.NilError(t, err)
 
-	assert.Equal(t, "whalelint: v0.0.2\n", stdBuffer.stdOut.String())
+	assert.Equal(t, "whalelint: v0.0.3\n", stdBuffer.stdOut.String())
 	assert.Equal(t, "", stdBuffer.stdErr.String())
 }
 
