@@ -270,6 +270,7 @@ func GetDockerfileAst(filePathString string) ([]instructions.Stage, []instructio
 // - try again until there is
 //   - either a valid AST tree that can be parsed further
 //   - there is no more child, in which case it returns an empty stage.
+// nolint:funlen
 func ParseDockerfileInstructionsSafely(dockerfile *parser.Result, fileHandle io.ReadSeeker) ([]instructions.Stage,
 	[]instructions.ArgCommand) {
 	if dockerfile == nil {

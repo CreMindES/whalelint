@@ -202,6 +202,10 @@ func ParseBashCommand(bashCommandLex []string) BashCommand {
 	// binary
 	bashCommand.bin, bashCommandLex = bashCommandLex[binaryIndex], bashCommandLex[binaryIndex+1:]
 
+	if len(bashCommandLex) == 0 {
+		return bashCommand
+	}
+
 	// optional subcommand
 	for _, subCommand := range subCommandMap[bashCommand.bin] {
 		if bashCommandLex[0] == subCommand {
