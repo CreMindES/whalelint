@@ -4,7 +4,7 @@
 <!--    <version>0.0.5</version>-->
     <vendor email="tamas.g.barna@gmail.com" url="https://github.com/CreMindES/whalelint">Tamas G. Barna</vendor>
     <category>Inspection</category>
-    <idea-version since-build="203.*"/>
+    <idea-version since-build="203"/>
 
     <description><![CDATA[
     WhaleLint is a Dockerfile linter written in Go</em>
