@@ -25,6 +25,7 @@ import kotlin.Throws
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.nio.file.Files
 import java.nio.file.Paths
 
 class WhaleLintExternalAnnotator : ExternalAnnotator<PsiFile, List<ValidationResult.Issue>>() {
@@ -42,15 +43,23 @@ class WhaleLintExternalAnnotator : ExternalAnnotator<PsiFile, List<ValidationRes
         val file = psiFile.virtualFile ?: return null
         val copy = createTempFile(text.toByteArray(file.charset))
 
+        // get path to WhaleLint executable bundled with the plugin
+        val pluginPath = PluginManagerCore.getPlugin(PluginId.getId("tamas_g_barna.whalelint"))!!.pluginPath
+        val executable = Paths.get(pluginPath.toString(), "bin/whalelint")
+
+        // assemble WhaleLint calling command
+        val command = arrayOf(executable.toString(), copy.absolutePath, "--format=json")
+
+        // Workaround for silly-silly JetBrains system bug.
+        // For details, please see https://github.com/intellij-rust/intellij-rust/pull/6869, or
+        // https://youtrack.jetbrains.com/issue/TW-4651, or any other similar ticket on the subject ...
+        if (!Files.isExecutable(executable)) {
+            executable.toFile().setExecutable(true)
+        }
+
         try {
             LOG.info("WhaleLint | Running ...")
 
-            // get path to WhaleLint executable bundled with the plugin
-            val pluginPath = PluginManagerCore.getPlugin(PluginId.getId("tamas_g_barna.whalelint"))!!.pluginPath
-            val executable = Paths.get(pluginPath.toString(), "bin/whalelint").toString()
-
-            // assemble WhaleLint calling command
-            val command = arrayOf(executable, copy.absolutePath, "--format=json")
             // execute WhaleLint
             val process = Runtime.getRuntime().exec(command)
             val reader = BufferedReader(InputStreamReader(process.inputStream))
