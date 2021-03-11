@@ -95,6 +95,19 @@ func LocationRangeFromCommand(command instructions.Command) LocationRange {
 	return BKRangeSliceToLocationRange(command.Location())
 }
 
+func LocationRangeToBKRange(locationRange LocationRange) parser.Range {
+	return parser.Range{
+		Start: parser.Position{
+			Line:      locationRange.Start().LineNumber(),
+			Character: locationRange.Start().CharNumber(),
+		},
+		End:   parser.Position{
+			Line:      locationRange.End().LineNumber(),
+			Character: locationRange.End().CharNumber(),
+		},
+	}
+}
+
 func BKRangeSliceToLocationRange(parserRange []parser.Range) LocationRange {
 	if parserRange == nil {
 		return LocationRange{
