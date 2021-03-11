@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.0.6 - 11th March 2021
+
+- Bug fixes:
+  - RUN009 wrong target - apt-get update instead of apt-get install for assume yes flag check |
+    [GitHub Issue #53](https://github.com/CreMindES/whalelint/issues/53)
+  - Wrong location on RUN009 for bash commands with repeating patterns |
+    [GitHub Issue #53](https://github.com/CreMindES/whalelint/issues/53)
+
 ## v0.0.5 - 8th March 2021
 
 - Bug fix:
