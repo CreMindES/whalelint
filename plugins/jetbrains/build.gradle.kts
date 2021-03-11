@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.platform.TargetPlatformVersion.NoVersion.description
 
 plugins {
     id("org.jetbrains.intellij") version "0.7.2"
@@ -8,7 +9,7 @@ plugins {
 }
 
 group = "WhaleLint"
-version = "0.0.5"
+version = "0.0.6"
 
 description = "WhaleLint is a Dockerfile linter written in Golang."
 
@@ -31,8 +32,8 @@ intellij {
     // setPlugins("Docker:$version")
 }
 
-tasks.register<Copy>("copyChangelog") {
-    from(file("$buildDir/../../vscode/CHANGELOG.md"))
+tasks.register<Copy>("copyChangelogAndReadme") {
+    from(file("$buildDir/../../vscode/CHANGELOG.md"), file("readme.md"))
     into(file("$buildDir/idea-sandbox/plugins/whalelint/docs/"))
 }
 
@@ -42,15 +43,22 @@ tasks.markdownToHtml {
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
-    dependsOn("copyChangelog", "markdownToHtml")
+    dependsOn("copyChangelogAndReadme", "markdownToHtml")
 
     val changelogPath = "$buildDir/idea-sandbox/plugins/whalelint/docs/CHANGELOG.html"
+    val readmePath    = "$buildDir/idea-sandbox/plugins/whalelint/docs/readme.html"
+
 
     if (file(changelogPath).exists()) {
         changeNotes(file(changelogPath).readText())
     }
+    if (file(readmePath).exists()) {
+        pluginDescription(file(readmePath).readText().replace(
+            "<h1>WhaleLint JetBrains Plugin</h1>", "").replace(
+            "<h2>Introduction</h2>", ""))
+    }
 
-    version("0.0.5")
+    version("0.0.6")
 }
 
 tasks.withType<JavaCompile> {
@@ -78,5 +86,5 @@ tasks.named("prepareSandbox") {
 }
 
 tasks.buildPlugin {
-    dependsOn("copyChangelog", "markdownToHtml")
+    dependsOn("copyChangelogAndReadme", "markdownToHtml")
 }

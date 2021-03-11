@@ -1,14 +1,13 @@
 <idea-plugin>
     <id>tamas_g_barna.whalelint</id>
     <name>WhaleLint</name>
-<!--    <version>0.0.5</version>-->
+    <!--Version is filled out by Gradle.-->
     <vendor email="tamas.g.barna@gmail.com" url="https://github.com/CreMindES/whalelint">Tamas G. Barna</vendor>
     <category>Inspection</category>
     <idea-version since-build="203"/>
 
-    <description><![CDATA[
-    WhaleLint is a Dockerfile linter written in Go</em>
-    ]]></description>
+    <!--Description is filled out by Gradle.-->
+    <description>Placeholder, it is filled out by Gradle from readme.md during the build process.</description>
 
     <depends>com.intellij.modules.platform</depends>
 <!--    <depends>Docker</depends>-->
