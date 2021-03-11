@@ -20,6 +20,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.google.code.gson:gson:2.8.6" )
     implementation("org.jetbrains:annotations:20.1.0")
+    runtimeOnly(group = "commons-io", name = "commons-io", version = "2.6")
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
