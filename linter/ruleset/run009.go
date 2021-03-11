@@ -2,6 +2,7 @@ package ruleset
 
 import (
 	"github.com/moby/buildkit/frontend/dockerfile/instructions"
+	"github.com/moby/buildkit/frontend/dockerfile/parser"
 
 	Parser "github.com/cremindes/whalelint/parser"
 	Utils "github.com/cremindes/whalelint/utils"
@@ -10,6 +11,7 @@ import (
 var _ = NewRule("RUN009", "Pass assume yes flag to package manager in order to be headless.", "",
 	ValWarning, ValidateRun009)
 
+// nolint: funlen, nestif
 func ValidateRun009(runCommand *instructions.RunCommand) RuleValidationResult {
 	result := RuleValidationResult{
 		isViolated:    false,
@@ -31,7 +33,7 @@ func ValidateRun009(runCommand *instructions.RunCommand) RuleValidationResult {
 	}
 
 	bashCommandList := Parser.ParseBashCommandList(runCommand.CmdLine)
-	for _, bashCommand := range bashCommandList {
+	for bashCommandIdx, bashCommand := range bashCommandList {
 		if len(bashCommand.SubCommand()) == 0 {
 			continue
 		}
@@ -40,7 +42,33 @@ func ValidateRun009(runCommand *instructions.RunCommand) RuleValidationResult {
 			if Utils.SliceContains(pmMap.subcommandSlice, bashCommand.SubCommand()) &&
 				!Utils.SliceContains(bashCommand.OptionKeyList(), pmMap.assumeYesSlice) {
 				result.SetViolated()
-				result.LocationRange = ParseLocationFromRawParser(bashCommand.Bin(), runCommand.Location())
+
+				// since multiple bash commands can have the same string pattern in them,
+				// the location need to be further restricted to the current bash command.
+				adjustedLocation := make([]parser.Range, 0)
+
+				// temp workaround, till bash parser can work together with raw parser
+				if bashCommandIdx > 0 {
+					location := LocationRangeFromCommand(runCommand)
+					if location.start.lineNumber == location.end.lineNumber {
+						// count sum length of bash commands so far
+						for _, bc := range bashCommandList[:bashCommandIdx] {
+							location.Start().charNumber += len(bc.String())
+						}
+
+						adjustedLocation = []parser.Range{LocationRangeToBKRange(location)}
+					} else {
+						// very naive heuristics, sorry
+						location.Start().lineNumber = location.Start().LineNumber() + bashCommandIdx
+						adjustedLocation = []parser.Range{LocationRangeToBKRange(location)}
+					}
+				}
+
+				if len(adjustedLocation) == 0 {
+					result.LocationRange = ParseLocationFromRawParser(bashCommand.Bin(), runCommand.Location())
+				} else {
+					result.LocationRange = ParseLocationFromRawParser(bashCommand.Bin(), adjustedLocation)
+				}
 			}
 		}
 	}
