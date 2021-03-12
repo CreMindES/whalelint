@@ -15,7 +15,7 @@ require (
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/moby/buildkit v0.8.2
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.7.0
 	github.com/zoumo/goset v0.2.0
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
