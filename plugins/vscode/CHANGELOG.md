@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.0.7 - 12th March 2021
+
+- Support, i.e exception for special empty image "scratch".
+- Bump versions for dependencies.
+- Docker image
+- Docs grooming
+
 ## v0.0.6 - 11th March 2021
 
 - Bug fixes:
