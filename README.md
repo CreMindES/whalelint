@@ -6,6 +6,8 @@
 
 Dockerfile linter written in Go.
 
+It provides static analysis for Dockerfiles, identifying common mistakes and promotes best practices.
+
 <p align="center">
   <img width="500px" src="docs/illustration/illustration.svg"/> 
 </p>
@@ -35,14 +37,15 @@ Each Dockerfile AST element has a corresponding set of rules. Click on the pictu
 | Configurable Output | | ![Done](https://img.shields.io/static/v1?label=&message=Done&color=Green)
 | - JSON | ![Done](https://img.shields.io/static/v1?label=&message=Done&color=Green) |
 | - Colored Summary | ![Done](https://img.shields.io/static/v1?label=&message=Done&color=Green) |
+| Docker image | | ![Done](https://img.shields.io/static/v1?label=&message=Done&color=Green) |
 | Rule pass | | ![NotYetStarted](https://img.shields.io/static/v1?label=&message=NoYetStarted&color=lightgrey) |
 | - Per line | ![NotYetStarted](https://img.shields.io/static/v1?label=&message=NoYetStarted&color=lightgrey) |
 | - Config file | ![NotYetStarted](https://img.shields.io/static/v1?label=&message=NoYetStarted&color=lightgrey) |
 | Config file | | ![NotYetStarted](https://img.shields.io/static/v1?label=&message=NoYetStarted&color=lightgrey) |
 | - Rule profiles | ![NotYetStarted](https://img.shields.io/static/v1?label=&message=NoYetStarted&color=lightgrey) |
 | IDE plugins/extensions | | ![InProgress](https://img.shields.io/static/v1?label=&message=InProgress&color=blue)
-| - VSCode | ![Preview](https://img.shields.io/static/v1?label=&message=Preview&color=blue)
-| - JetBrains | ![InProgress](https://img.shields.io/static/v1?label=&message=InProgress&color=blue)
+| - VSCode | ![PreviewRelease](https://img.shields.io/static/v1?label=&message=PreviewRelease&color=blue)
+| - JetBrains | ![PreviewRelease](https://img.shields.io/static/v1?label=&message=PreviewRelease&color=blue)
 
 ### Design Decisions
 
@@ -51,6 +54,17 @@ A collection of documents describing the thought process behind selected design 
 ### Contribution Guide
 
 [Link > TODO](docs/contribution/readme.md)
+
+## Docker Image
+
+![Docker imaage version](https://img.shields.io/docker/v/cremindes/whalelint)
+![DockerHub Downloads](https://img.shields.io/docker/pulls/cremindes/whalelint)
+![Docker image size](https://img.shields.io/docker/image-size/cremindes/whalelint)
+
+```bash
+docker pull cremindes/whalelint:[tag]
+docker run --rm -v $(pwd)/Dockerfile:/Dockerfile cremindes/whalelint:[tag] Dockerfile
+```
 
 ## Plugins
 
@@ -63,7 +77,7 @@ A collection of documents describing the thought process behind selected design 
   <img src="https://user-images.githubusercontent.com/5306361/110693878-3a926300-81e8-11eb-80c4-7041f2ecf675.gif"/>
 </p>
 
-*Note: make sure, to also install the [Docker plugin](https://plugins.jetbrains.com/plugin/7724-docker).
+*Note: make sure, to also install the [Docker plugin](https://plugins.jetbrains.com/plugin/7724-docker) in case it's not bundled with the IDE.
 
 ### VSCode
 
