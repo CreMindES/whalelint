@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "WhaleLint"
-version = "0.0.6"
+version = "0.0.7"
 
 description = "WhaleLint is a Dockerfile linter written in Golang."
 
@@ -58,7 +58,7 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
             "<h2>Introduction</h2>", ""))
     }
 
-    version("0.0.6")
+    version("0.0.7")
 }
 
 tasks.withType<JavaCompile> {
