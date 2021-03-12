@@ -1,0 +1,35 @@
+<idea-plugin>
+    <id>tamas_g_barna.whalelint</id>
+    <name>WhaleLint</name>
+    <!--Version is filled out by Gradle.-->
+    <vendor email="tamas.g.barna@gmail.com" url="https://github.com/CreMindES/whalelint">Tamas G. Barna</vendor>
+    <category>Inspection</category>
+    <idea-version since-build="203"/>
+
+    <!--Description is filled out by Gradle.-->
+    <description>Placeholder, it is filled out by Gradle from readme.md during the build process.</description>
+
+    <depends>com.intellij.modules.platform</depends>
+<!--    <depends>Docker</depends>-->
+
+    <resource-bundle>whalelint.Bundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <externalAnnotator language="Dockerfile" implementationClass="whalelint.WhaleLintExternalAnnotator"/>
+        <localInspection language="Dockerfile"
+                         bundle="whalelint.Bundle"
+                         displayName="WhaleLint"
+                         enabledByDefault="true"
+                         groupPath="Dockerfile"
+                         groupKey="inspection.group.name"
+                         implementationClass="whalelint.Inspection"
+                         level="WARNING"
+                         shortName="WL"
+        />
+        <notificationGroup id="WhaleLint Notification Group" displayType="BALLOON" key="notification.group.name"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>

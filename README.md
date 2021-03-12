@@ -56,7 +56,14 @@ A collection of documents describing the thought process behind selected design 
 
 ### JetBrains
 
-![InProgress](https://img.shields.io/static/v1?label=&message=InProgress&color=blue)
+![Version](https://img.shields.io/jetbrains/plugin/v/tamas_g_barna.whalelint)
+![Downloads](https://img.shields.io/jetbrains/plugin/d/tamas_g_barna.whalelint)
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/5306361/110693878-3a926300-81e8-11eb-80c4-7041f2ecf675.gif"/>
+</p>
+
+*Note: make sure, to also install the [Docker plugin](https://plugins.jetbrains.com/plugin/7724-docker).
 
 ### VSCode
 
@@ -64,7 +71,7 @@ A collection of documents describing the thought process behind selected design 
 [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/tamasgbarna.whalelint.svg)](https://marketplace.visualstudio.com/items?itemName=tamasgbarna.whalelint)
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/5306361/110014611-4c28c600-7d23-11eb-915d-114aca6470b2.gif">
+  <img src="https://user-images.githubusercontent.com/5306361/110014611-4c28c600-7d23-11eb-915d-114aca6470b2.gif"/>
 </p>
 
 ## Alternatives
