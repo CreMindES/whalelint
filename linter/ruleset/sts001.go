@@ -12,6 +12,10 @@ var _ = NewRule("STS001", "Stage name should have an explicit tag..", "", ValWar
 func ValidateSts001(stage instructions.Stage) RuleValidationResult {
 	result := RuleValidationResult{isViolated: false, LocationRange: BKRangeSliceToLocationRange(stage.Location)}
 
+	if stage.BaseName == "scratch" { // special explicitly empty image
+		return result
+	}
+
 	image, tag := utils.SplitKeyValue(stage.BaseName, ':')
 	result.SetViolated(tag == "")
 
