@@ -67,10 +67,11 @@ type PrintOptionsForSeverityMap map[RuleSet.Severity]struct {
 type FindingsMap map[RuleSet.Severity][]RuleSet.RuleValidationResult
 
 // GroupFindings groups lint rule violations based on their Severity.
-func GroupFindings(findings []RuleSet.RuleValidationResult) FindingsMap {
+func GroupFindings(findings []RuleSet.RuleValidationResult) (FindingsMap, bool) {
 	// RuleSet::Rule severity list
 	severityLevelSlice := RuleSet.GetSeverityList()
 	findingsMap := make(map[RuleSet.Severity][]RuleSet.RuleValidationResult, len(severityLevelSlice))
+	hasViolations := false
 
 	// group findings be severity
 	for i := 0; i < len(severityLevelSlice); i++ {
@@ -83,7 +84,7 @@ func GroupFindings(findings []RuleSet.RuleValidationResult) FindingsMap {
 		// assert back to []RuleSet.RuleValidationResult
 		sevSlice, ok := sevFilterResult.([]RuleSet.RuleValidationResult)
 		if !ok {
-			return map[RuleSet.Severity][]RuleSet.RuleValidationResult{}
+			return map[RuleSet.Severity][]RuleSet.RuleValidationResult{}, false
 		}
 		// sort findings by line number
 		sort.Slice(sevSlice, func(i, j int) bool {
@@ -91,16 +92,26 @@ func GroupFindings(findings []RuleSet.RuleValidationResult) FindingsMap {
 		})
 
 		findingsMap[severityLevelSlice[i]] = sevSlice
+		if len(sevSlice) > 0 {
+			hasViolations = true
+		}
 	}
 
-	return findingsMap
+	return findingsMap, hasViolations
 }
 
 // AssembleSummaryHeader prepares the one line short summary header.
 // Verbosity::short.
-func AssembleSummaryHeader(findingsMap FindingsMap, printOptions PrintOptions, strBuilder *strings.Builder) {
+func AssembleSummaryHeader(findingsMap FindingsMap, hasViolation bool, printOptions PrintOptions,
+	strBuilder *strings.Builder) {
 	// Header | Start
 	strBuilder.WriteString("WhaleLint summary: ")
+
+	if !hasViolation {
+		strBuilder.WriteString(color.New(color.FgGreen).SprintFunc()("Everything looks good."))
+
+		return
+	}
 
 	// Header | Body
 	hasPrev := false
@@ -166,7 +177,7 @@ func PrintSummary(violations []RuleSet.RuleValidationResult, writer io.Writer, o
 	// global color output option
 	color.NoColor = options.NoColor
 
-	findingsMap := GroupFindings(violations)
+	findingsMap, hasViolation := GroupFindings(violations)
 
 	// Helper print option map
 	printOptionsForSeverityMap := PrintOptionsForSeverityMap{
@@ -185,7 +196,7 @@ func PrintSummary(violations []RuleSet.RuleValidationResult, writer io.Writer, o
 	// Main string builder
 	strBuilder := &strings.Builder{}
 
-	AssembleSummaryHeader(findingsMap, printOptions, strBuilder)
+	AssembleSummaryHeader(findingsMap, hasViolation, printOptions, strBuilder)
 
 	// End of VerbosityShort summary
 	if options.Verbosity == VerbosityShort { // Short Summary ends here
