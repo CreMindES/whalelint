@@ -88,3 +88,8 @@ tasks.named("prepareSandbox") {
 tasks.buildPlugin {
     dependsOn("copyChangelogAndReadme", "markdownToHtml")
 }
+
+tasks.publishPlugin {
+    dependsOn("copyChangelogAndReadme", "markdownToHtml")
+    token(System.getenv("JETBRAINS_TOKEN"))
+}
