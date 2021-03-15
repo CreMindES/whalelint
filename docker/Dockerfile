@@ -16,9 +16,9 @@ FROM scratch
 ARG gitCommitHash
 
 LABEL maintainer="Tamas Gabor Barna"
-LABEL source="https://github.com/CreMindES/whalelint"
-LABEL description="Dockerfile linter."
-LABEL revision=${gitCommitHash}
+LABEL org.opencontainers.image.source="https://github.com/CreMindES/whalelint"
+LABEL org.opencontainers.image.description="Dockerfile linter."
+LABEL org.opencontainers.image.revision=${gitCommitHash}
 
 COPY --from=upxBuilder /app/whalelint /usr/local/bin/
 

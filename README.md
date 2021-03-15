@@ -57,9 +57,9 @@ A collection of documents describing the thought process behind selected design 
 
 ## Docker Image
 
-![Docker imaage version](https://img.shields.io/docker/v/cremindes/whalelint)
-![DockerHub Downloads](https://img.shields.io/docker/pulls/cremindes/whalelint)
-![Docker image size](https://img.shields.io/docker/image-size/cremindes/whalelint)
+[![Docker imaage version](https://img.shields.io/docker/v/cremindes/whalelint)](https://hub.docker.com/r/cremindes/whalelint)
+[![DockerHub Downloads](https://img.shields.io/docker/pulls/cremindes/whalelint)](https://hub.docker.com/r/cremindes/whalelint)
+[![Docker image size](https://img.shields.io/docker/image-size/cremindes/whalelint)](https://hub.docker.com/r/cremindes/whalelint)
 
 ```bash
 docker pull cremindes/whalelint:[tag]
@@ -70,8 +70,8 @@ docker run --rm -v $(pwd)/Dockerfile:/Dockerfile cremindes/whalelint:[tag] Docke
 
 ### JetBrains
 
-![Version](https://img.shields.io/jetbrains/plugin/v/tamas_g_barna.whalelint)
-![Downloads](https://img.shields.io/jetbrains/plugin/d/tamas_g_barna.whalelint)
+[![Version](https://img.shields.io/jetbrains/plugin/v/tamas_g_barna.whalelint)](https://plugins.jetbrains.com/plugin/16284-whalelint)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/tamas_g_barna.whalelint)](https://plugins.jetbrains.com/plugin/16284-whalelint)
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/5306361/110693878-3a926300-81e8-11eb-80c4-7041f2ecf675.gif"/>
