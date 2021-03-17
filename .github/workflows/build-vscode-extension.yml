@@ -1,0 +1,21 @@
+name: build-vscode-extension
+on:
+  push:
+    paths:
+     - 'plugins/vscode/'
+jobs:
+  build-vscode-extension:
+    defaults:
+      run:
+        working-directory: 'plugins/vscode/'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: npm install
+      - run: npm run vscode:prepublish
