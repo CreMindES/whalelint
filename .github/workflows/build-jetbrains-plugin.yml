@@ -3,6 +3,8 @@ on:
   push:
     paths:
      - 'plugins/jetbrains/'
+    tags-ignore:
+      - '**'
 jobs:
   build-jetbrains-plugin:
     runs-on: ${{ matrix.os }}

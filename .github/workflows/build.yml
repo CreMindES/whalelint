@@ -1,8 +1,21 @@
 name: build-go
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  # pull_request:
+  #   branches:
+  #     - '**'
+  #   tags-ignore:
+  #     - '**'
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
 
@@ -20,10 +33,21 @@ jobs:
             ${{ runner.OS }}-go
 
       - name: Go build
-        run: go build .
+        run: go build -ldflags "-w -s" -o "whalelint-${{ github.sha }}"
+        env: 
+          CGO_ENABLED: 0
+          OS: ${{ runner.os }}
       
       - name: Run tests
         run: go test -v -cover ./...
+
+      - name: Upload WhaleLint bin to Artifacts
+        # if:   ${{ github.base_ref }} == 'main'
+        uses: actions/upload-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} ${{ runner.os }}
+          path: ${{ github.workspace }}/whalelint-${{ github.sha }}
+          retention-days: 7
         
   lint:
     name: lint
