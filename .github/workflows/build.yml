@@ -1,21 +1,23 @@
 name: build-go
 on: 
   push:
-    branches:
-      - '**'
+    # branches:
+    #   - '**'
+    branches-ignore:
+      - 'main'
     tags-ignore:
       - '**'
-  # pull_request:
-  #   branches:
-  #     - '**'
-  #   tags-ignore:
-  #     - '**'
+  pull_request:
+    branches:
+      - 'main'
+    tags-ignore:
+      - '**'
 jobs:
   build_and_test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest] #, macos-latest]
     steps:
       - uses: actions/checkout@v2
 
@@ -41,13 +43,29 @@ jobs:
       - name: Run tests
         run: go test -v -cover ./...
 
+      - run: echo "REF is ${{ github.ref }}"
+      - run: echo "BASE REF is ${{ github.base_ref }}"
+
       - name: Upload WhaleLint bin to Artifacts
-        # if:   ${{ github.base_ref }} == 'main'
+        if: github.base_ref == 'main'
         uses: actions/upload-artifact@v2
         with:
           name: whalelint-${{ github.sha }} ${{ runner.os }}
           path: ${{ github.workspace }}/whalelint-${{ github.sha }}
           retention-days: 7
+
+  vscode:
+    name: vscode-trigger
+    needs: build_and_test
+    if: github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Triggen VSCode extension build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.WHALELINT_WORKFLOW }}
+          event-type: pr
+          client-payload: '{"base_ref": "${{ github.base_ref }}", "sha": "${{ github.sha }}", "runner.os": "${{ runner.os }}" }'
         
   lint:
     name: lint

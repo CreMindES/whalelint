@@ -1,11 +1,15 @@
 name: build-vscode-extension
 on:
   push:
-    # paths:
-    #  - 'plugins/vscode/'
-    #  - '.github/workflows/build-vscode-extension.yml'
-    # tags-ignore:
-    #   - '**'
+    paths:
+     - 'plugins/vscode/'
+     - '.github/workflows/build-vscode-extension.yml'
+    tags-ignore:
+      - '**'
+  repository_dispatch:
+    types: 
+      - pr
+      - pr_merge
 jobs:
   build-vscode-extension:
     defaults:
@@ -21,23 +25,15 @@ jobs:
         with:
           node-version: 15.6.0
           check-latest: true
-      - name: Wait for WhaleLint build
-        uses: tomchv/wait-my-workflow@v1.1.0
-        id: wait-build
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'lint'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          intervalSeconds: 10
-          timeoutSeconds: 100
-      - run: sleep 30
       - name: Copy WhaleLint binary into extension folder
+        if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}
         uses: dawidd6/action-download-artifact@v2
         with:
           name: whalelint-${{ github.sha }} ${{ runner.os }}
           path: plugins/vscode/whalelint
           workflow: build.yml
       - name: Add run permission to WhaleLint binary
+        if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}
         run: chmod +x plugins/vscode/whalelint
       - run: |
           npm install && \
@@ -45,6 +41,7 @@ jobs:
           vsce package -o whalelint-${{ github.sha }}.vsix
       # if:   ${{ github.base_ref }} == 'main' - TODO
       - name: Upload VSCode Extension Artifact
+        if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}
         uses: actions/upload-artifact@v2
         with:
           name: whalelint-${{ github.sha }} VSCodeExtension ${{ runner.os }}
