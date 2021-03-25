@@ -81,11 +81,36 @@ jobs:
   vscode:
     name: vscode-trigger
     needs: build_and_test
+<<<<<<< HEAD
     if: needs.build_and_test.outputs.trigger_signal == 'success'
+=======
+    if: |
+      ( 
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      ) ||
+      ( 
+        github.event_name == 'pull_request' &&
+        github.base_ref == 'main' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        !startsWith(github.actor, 'dependabot') 
+      )
+>>>>>>> dfc5e70 (Do not try to trigger workflows on forks.)
     runs-on: ubuntu-latest
     steps:
       - name: Dump context
         uses: crazy-max/ghaction-dump-context@v1
+<<<<<<< HEAD
+=======
+      - name: push or pr
+        id: event_type
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "::set-output name=ref::${{ github.ref }}"
+          else
+            echo "::set-output name=ref::refs/pull/${{ github.event.pull_request.number }}/merge"
+          fi
+>>>>>>> dfc5e70 (Do not try to trigger workflows on forks.)
       - name: Trigger VSCode extension build workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
@@ -97,7 +122,21 @@ jobs:
   jetbrains:
     name: jetbrains-trigger
     needs: build_and_test
+<<<<<<< HEAD
     if: needs.build_and_test.outputs.trigger_signal == 'success'
+=======
+    if: |
+      ( 
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      ) ||
+      ( 
+        github.event_name == 'pull_request' &&
+        github.base_ref == 'main' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        !startsWith(github.actor, 'dependabot') 
+      )
+>>>>>>> dfc5e70 (Do not try to trigger workflows on forks.)
     runs-on: ubuntu-latest
     steps:
       - name: Trigger JetBrains plugin build workflow
