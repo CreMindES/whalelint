@@ -64,9 +64,21 @@ jobs:
   vscode:
     name: vscode-trigger
     needs: build_and_test
-    if: github.base_ref == 'main' || github.ref == 'refs/heads/main'
+    if: |
+      ( 
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      ) ||
+      ( 
+        github.event_name == 'pull_request' &&
+        github.base_ref == 'main' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        !startsWith(github.actor, 'dependabot') 
+      )
     runs-on: ubuntu-latest
     steps:
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
       - name: push or pr
         id: event_type
         run: |
@@ -82,17 +94,21 @@ jobs:
           ref: ${{ steps.event_type.outputs.ref }}
           token: ${{ secrets.WHALELINT_WORKFLOW }}
           inputs: '{ "event_type": "push_to_main", "debug": "true" }'
-      # - name: Trigger VSCode extension build
-      #   uses: peter-evans/repository-dispatch@v1
-      #   with:
-      #     token: ${{ secrets.WHALELINT_WORKFLOW }}
-      #     event-type: pr
-      #     client-payload: '{"base_ref": "${{ github.base_ref }}", "sha": "${{ github.sha }}", "runner.os": "${{ runner.os }}" }'
   
   jetbrains:
     name: jetbrains-trigger
     needs: build_and_test
-    if: github.base_ref == 'main' || github.ref == 'refs/heads/main'
+    if: |
+      ( 
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      ) ||
+      ( 
+        github.event_name == 'pull_request' &&
+        github.base_ref == 'main' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        !startsWith(github.actor, 'dependabot') 
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Trigger JetBrains plugin build workflow

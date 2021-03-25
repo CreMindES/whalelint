@@ -6,10 +6,6 @@ on:
      - '.github/workflows/build-vscode-extension.yml'
     tags-ignore:
       - '**'
-  repository_dispatch:
-    types: 
-      - pr
-      - pr_merge
   workflow_dispatch:
     inputs:
       event_type:
