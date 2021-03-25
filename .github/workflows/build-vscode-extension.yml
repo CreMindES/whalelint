@@ -1,0 +1,64 @@
+name: build-vscode-extension
+on:
+  push:
+    paths:
+     - 'plugins/vscode/'
+     - '.github/workflows/build-vscode-extension.yml'
+    tags-ignore:
+      - '**'
+  repository_dispatch:
+    types: 
+      - pr
+      - pr_merge
+  workflow_dispatch:
+    inputs:
+      event_type:
+        description: "Trigger event type"
+        required: false
+      debug:
+        description: 'debug mode boolean'
+        required: false
+        default: 'false'
+jobs:
+  build-vscode-extension:
+    defaults:
+      run:
+        working-directory: 'plugins/vscode/'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest] #, macos-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 15.6.0
+          check-latest: true
+      # - run: sleep 30
+      - run: echo "trying to download whalelint-${{ github.sha }} ${{ runner.os }} ..."
+      - name: Download WhaleLint binary
+        if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} ${{ runner.os }}
+          path: plugins/vscode/
+          workflow: build.yml
+          workflow_conclusion: success
+      - name: Rename binary
+        if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}
+        run: mv whalelint-${{ github.sha }} whalelint
+      - name: Add run permission to WhaleLint binary
+        if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}
+        run: chmod +x ${{ github.workspace }}/plugins/vscode/whalelint
+      - run: |
+          npm install && \
+          npm install -g vsce && \
+          vsce package -o whalelint-${{ github.sha }}.vsix
+      - name: Upload VSCode Extension Artifact
+      # if: github.base_ref == 'main' || github.ref == 'refs/heads/main' 
+        if: ${{ github.event.inputs.event_type }} == "push_to_main" || github.base_ref == 'main' || github.ref == 'refs/heads/main' 
+        uses: actions/upload-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} VSCodeExtension ${{ runner.os }}
+          path: ${{ github.workspace }}/plugins/vscode/whalelint-${{ github.sha }}.vsix
+          retention-days: 7
