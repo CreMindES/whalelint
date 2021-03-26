@@ -30,7 +30,8 @@ jobs:
         with:
           node-version: 15.6.0
           check-latest: true
-      # - run: sleep 30
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
       - run: echo "trying to download whalelint-${{ github.sha }} ${{ runner.os }} ..."
       - name: Download WhaleLint binary
         if: ${{ github.event.pr }} || ${{ github.event.pr_merge }}

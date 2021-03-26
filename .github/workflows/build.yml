@@ -86,19 +86,11 @@ jobs:
     steps:
       - name: Dump context
         uses: crazy-max/ghaction-dump-context@v1
-      - name: push or pr
-        id: event_type
-        run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "::set-output name=ref::${{ github.ref }}"
-          else
-            echo "::set-output name=ref::refs/pull/${{ github.event.pull_request.number }}/merge"
-          fi
       - name: Trigger VSCode extension build workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: build-vscode-extension
-          ref: ${{ steps.event_type.outputs.ref }}
+          ref: ${{ github.head.ref }}
           token: ${{ secrets.WHALELINT_WORKFLOW }}
           inputs: '{ "event_type": "push_to_main", "debug": "true" }'
   
@@ -112,6 +104,6 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: build-jetbrains-plugin
-          # ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.WHALELINT_WORKFLOW }}
           inputs: '{ "event_type": "push_to_main", "debug": "true" }'
