@@ -16,6 +16,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest] #, macos-latest]
+    outputs:
+      trigger_signal: ${{ steps.trigger_signal.conclusion }}
     steps:
       - uses: actions/checkout@v2
 
@@ -61,20 +63,32 @@ jobs:
           path: ${{ github.workspace }}/whalelint-${{ github.sha }}
           retention-days: 7
 
+      - name: Need to trigger workflows
+        id: trigger_signal
+        if: |
+          ( 
+            github.event_name == 'push' && 
+            github.ref == 'refs/heads/main'
+          ) ||
+          ( 
+            github.event_name == 'pull_request' &&
+            github.base_ref == 'main' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            !startsWith(github.actor, 'dependabot') 
+          )
+        run: echo "Need to trigger further workflows"
+
+  debug:
+    name: debug
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ needs.build_and_test.outputs.trigger_signal }}
+
   vscode:
     name: vscode-trigger
     needs: build_and_test
-    if: |
-      ( 
-        github.event_name == 'push' && 
-        github.ref == 'refs/heads/main'
-      ) ||
-      ( 
-        github.event_name == 'pull_request' &&
-        github.base_ref == 'main' &&
-        github.event.pull_request.head.repo.full_name == github.repository &&
-        !startsWith(github.actor, 'dependabot') 
-      )
+    if: needs.build_and_test.outputs.trigger_signal == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Dump context
@@ -98,17 +112,7 @@ jobs:
   jetbrains:
     name: jetbrains-trigger
     needs: build_and_test
-    if: |
-      ( 
-        github.event_name == 'push' && 
-        github.ref == 'refs/heads/main'
-      ) ||
-      ( 
-        github.event_name == 'pull_request' &&
-        github.base_ref == 'main' &&
-        github.event.pull_request.head.repo.full_name == github.repository &&
-        !startsWith(github.actor, 'dependabot') 
-      )
+    if: needs.build_and_test.outputs.trigger_signal == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger JetBrains plugin build workflow
