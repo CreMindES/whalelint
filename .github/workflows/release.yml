@@ -1,0 +1,137 @@
+name: 'release'
+on:
+  create:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - ci*                     # ci tag prefix is intended for testing release making.
+
+jobs:
+  release-bin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get WhaleLint Linux binary artifact
+        id: get-whalelint-binary-artifact-linux
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} Linux
+          path: whalelint-Linux/whalelint-${{ github.sha }}
+          workflow: build.yml
+      - name: Get WhaleLint macOS binary artifact
+        id: get-whalelint-binary-artifact-macos
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} macOS
+          path: whalelint-macOS/whalelint-${{ github.sha }}
+          workflow: build.yml
+      - name: Get the version from the tag
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Rename and tar.gz Linux binary
+        shell: 'bash'
+        run: |
+          cd whalelint-Linux && \
+          mv whalelint-${{ github.sha }} whalelint && \
+          tar -czvf ../whalelint-${{ steps.get_version.outputs.VERSION }}-linux-x86_64.tar.gz whalelint && \
+          cd -
+      - name: Rename and tar.gz macOS binary
+        shell: 'bash'
+        run: |
+          cd whalelint-macOS && \
+          mv whalelint-${{ github.sha }} whalelint && \
+          tar -czvf ../whalelint-${{ steps.get_version.outputs.VERSION }}-macos-x86_64.tar.gz whalelint && \
+          cd -
+      - name: Release WhaleLint
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            whalelint-${{ steps.get_version.outputs.VERSION }}-linux-x86_64.tar.gz
+            whalelint-${{ steps.get_version.outputs.VERSION }}-macos-x86_64.tar.gz
+          draft: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  publish-jetbrains-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the version from the tag
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Get JetBrains plugin artifact
+        id: get-jetbrains-plugin-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} JetBrainsPlugin
+          path: whalelint-${{ steps.get_version.outputs.VERSION }}.zip
+          workflow: build-jetbrains-plugin.yml
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Publish JetBrains plugin to the marketplace
+        if: ${{ !startsWith(github.ref, 'refs/tags/ci') }}
+        run: ./gradlew publishPlugin
+        env:
+          JETBRAINS_TOKEN: ${{ secrets.JETBRAINS_TOKEN }}
+
+  publish-vscode-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the version from the tag
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Get VSCode plugin artifact
+        id: get-vscode-extension-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} VSCodeExtension
+          path: whalelint-${{ steps.get_version.outputs.VERSION }}.vsix
+          workflow: build-vscode-extension.yml
+      - name: Install npm
+        run: install npm
+      - name: Publish
+        if: ! startsWith(github.ref, 'refs/tags/ci')
+        run: |
+          npm i -g vsce && \
+          vsce publish --packagePath whalelint-${{ steps.get_version.outputs.VERSION }}.vsix
+        env:
+          VSCE_PAT: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+
+  container-image:
+    runs-on: ubuntu-latest
+    if: 'false'
+    steps:
+      - name: Get the version from the tag
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      # same image is uploaded to both places
+      # could be sped up by only using the manifests if that's supperted by all the registries
+      - uses: onichandame/docker-registry-sync-action@master
+        if: ! startsWith(github.ref, 'refs/tags/ci')
+        with:
+          source_repository: docker.io/cremindes/whalelint:latest
+          source_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          source_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          target_repository: docker.io/cremindes/whalelint:${{ steps.get_version.outputs.VERSION }}
+          target_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          target_password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: onichandame/docker-registry-sync-action@master
+        if: ! startsWith(github.ref, 'refs/tags/ci')
+        with:
+          source_repository: ghcr.io/cremindes/whalelint:latest
+          source_username: ${{ github.repository_owner }}
+          source_password: ${{ secrets.GHCR_TOKEN }}
+          target_repository: ghcr.io/cremindes/whalelint:${{ steps.get_version.outputs.VERSION }}
+          target_username: ${{ github.repository_owner }}
+          target_password: ${{ secrets.GHCR_TOKEN }}

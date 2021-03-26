@@ -1,17 +1,109 @@
 name: build
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - 'main'
+    tags-ignore:
+      - '**'
+  pull_request:
+    branches:
+      - 'main'
+    tags-ignore:
+      - '**'
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build_and_test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest] #, macos-latest]
+    outputs:
+      trigger_signal: ${{ steps.trigger_signal.conclusion }}
     steps:
       - uses: actions/checkout@v2
 
-      # Setup Go
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v2.1.3
         with:
           go-version: '1.15.6' # The Go version to download (if necessary) and use.
 
-      # Run testing on the code
-      - name: Run testing
+      - name: Cache Go modules
+        uses: actions/cache@v2.1.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.OS }}-go
+
+      - name: Go build
+        run: go build -ldflags "-w -s" -o "whalelint-${{ github.sha }}"
+        env: 
+          CGO_ENABLED: 0
+          OS: ${{ runner.os }}
+      
+      - name: Run tests
         run: go test -v -cover ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
+          version: v1.31
+          skip-go-installation: true
+          skip-pkg-cache: true
+          skip-build-cache: true
+
+      - run: echo "REF is ${{ github.ref }}"
+      - run: echo "BASE REF is ${{ github.base_ref }}"
+
+      - name: Upload WhaleLint bin to Artifacts
+        if: github.base_ref == 'main' || github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} ${{ runner.os }}
+          path: ${{ github.workspace }}/whalelint-${{ github.sha }}
+          retention-days: 7
+
+      - name: Need to trigger workflows
+        id: trigger_signal
+        if: |
+          ( 
+            github.event_name == 'push' && 
+            github.ref == 'refs/heads/main'
+          ) ||
+          ( 
+            github.event_name == 'pull_request' &&
+            github.base_ref == 'main' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            !startsWith(github.actor, 'dependabot') 
+          )
+        run: echo "Need to trigger further workflows"
+
+  vscode:
+    name: vscode-trigger
+    needs: build_and_test
+    if: needs.build_and_test.outputs.trigger_signal == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
+      - name: Trigger VSCode extension build workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: build-vscode-extension
+          ref: ${{ github.head.ref }}
+          token: ${{ secrets.WHALELINT_WORKFLOW }}
+          inputs: '{ "event_type": "push_to_main", "debug": "true" }'
+  
+  jetbrains:
+    name: jetbrains-trigger
+    needs: build_and_test
+    if: needs.build_and_test.outputs.trigger_signal == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger JetBrains plugin build workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: build-jetbrains-plugin
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.WHALELINT_WORKFLOW }}
+          inputs: '{ "event_type": "push_to_main", "debug": "true" }'
