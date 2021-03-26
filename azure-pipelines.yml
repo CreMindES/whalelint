@@ -1,0 +1,100 @@
+trigger:
+  branches:
+    include:
+      - '*'
+
+pr:
+  autoCancel: true
+
+pool:
+  vmImage: ubuntu-latest
+
+# variables:
+  # buildPlugins: $[or( in(variables['Build.Reason'], 'Manual', 'PullRequest') ), eq(variables['Build.SourceBranch'], 'refs/heads/main'))]
+
+jobs:
+- job: buildGo
+  displayName: "Build WhaleLint"
+  steps:
+  - task: GoTool@0
+    displayName: "Install Go"
+    inputs:
+      version: '1.15.6'
+  - task: Go@0
+    displayName: "Install Go dependencies"
+    inputs:
+      command: 'get'
+      arguments: '-d'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: Go@0
+    displayName: "Build WhaleLint"
+    inputs:
+      command: 'build'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: Go@0
+    inputs:
+      command: 'test'
+      arguments: '-v ./...'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+    displayName: "Run tests"
+  - task: Go@0
+    displayName: "Generate coverage"
+    inputs:
+      command: 'test'
+      arguments: "-coverprofile=coverage.txt -covermode=atomic ./..."
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: $(System.DefaultWorkingDirectory)/whalelint
+      artifactName: whalelint
+
+- job: BuildVSCodeExtension
+  displayName: "Build VSCode Extension"
+  dependsOn: buildGo
+  # condition: $(buildPlugins)
+  steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: '15.6.x'
+    - task: CmdLine@2
+      displayName: 'npm install'
+      inputs:
+        script: |
+          npm install && \
+          npm install -g vsce
+        workingDirectory: '$(System.DefaultWorkingDirectory)/plugins/vscode/'
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifact: whalelint
+        path: $(System.DefaultWorkingDirectory)/plugins/vscode/
+    - task: CmdLine@2
+      displayName: 'Package Extension'
+      inputs:
+        script: vsce package -o whalelint.vsix
+        workingDirectory: '$(System.DefaultWorkingDirectory)/plugins/vscode/'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(System.DefaultWorkingDirectory)/plugins/vscode/whalelint.vsix'
+        artifactName: whalelint-vscode
+
+- job: BuildJetBrainsPlugin
+  displayName: "Build JetBrains Plugin"
+  dependsOn: buildGo
+  # condition: $(buildPlugins)
+  steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifact: whalelint
+        path: $(System.DefaultWorkingDirectory)/
+    - task: Gradle@2
+      inputs:
+        workingDirectory: '$(System.DefaultWorkingDirectory)/plugins/jetbrains/'
+        gradleWrapperFile: '$(System.DefaultWorkingDirectory)/plugins/jetbrains/gradlew'
+        gradleOptions: '-Xmx3072m'
+        publishJUnitResults: false
+        tasks: 'buildPlugin'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(System.DefaultWorkingDirectory)/plugins/jetbrains/build/distributions/'
+        artifactName: whalelint-jetbrains
+    
