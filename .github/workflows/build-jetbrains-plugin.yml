@@ -2,7 +2,7 @@ name: build-jetbrains-plugin
 on: 
   push:
     paths:
-     - 'plugins/jetbrains/'
+     - 'plugins/jetbrains/**'
      - '.github/workflows/build-jetbrains-plugin.yml'
     tags-ignore:
       - '**'

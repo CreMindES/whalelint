@@ -78,13 +78,6 @@ jobs:
           )
         run: echo "Need to trigger further workflows"
 
-  debug:
-    name: debug
-    needs: build_and_test
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ${{ needs.build_and_test.outputs.trigger_signal }}
-
   vscode:
     name: vscode-trigger
     needs: build_and_test

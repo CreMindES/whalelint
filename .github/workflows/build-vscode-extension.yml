@@ -2,7 +2,7 @@ name: build-vscode-extension
 on:
   push:
     paths:
-     - 'plugins/vscode/'
+     - 'plugins/vscode/**'
      - '.github/workflows/build-vscode-extension.yml'
     tags-ignore:
       - '**'
