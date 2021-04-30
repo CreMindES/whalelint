@@ -5,7 +5,6 @@ go 1.15
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/ajstarks/svgo v0.0.0-20200725142600-7a3c8b57fecb
 	github.com/alecthomas/kong v0.2.16
 	github.com/docker/docker v20.10.0-beta1.0.20201110211921-af34b94a78a1+incompatible
 	github.com/dustin/go-humanize v1.0.0
@@ -14,7 +13,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
-	github.com/moby/buildkit v0.8.2
+	github.com/moby/buildkit v0.8.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/zoumo/goset v0.2.0
