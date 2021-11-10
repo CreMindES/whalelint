@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/alecthomas/kong v0.2.17
+	github.com/alecthomas/kong v0.2.18
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.13.0
