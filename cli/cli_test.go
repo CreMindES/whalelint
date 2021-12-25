@@ -3,7 +3,6 @@ package cli_test
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -202,7 +201,7 @@ func TestLintCommand_Run(t *testing.T) {
 
 			for i, fileContent := range testCase.TmpFileContent {
 				if len(fileContent) > 0 {
-					tmpFileSlice[i], _ = ioutil.TempFile("", "mock-dockerfile.*")
+					tmpFileSlice[i], _ = os.CreateTemp("", "mock-dockerfile.*")
 
 					_, errTmpFile := tmpFileSlice[i].WriteString(fileContent)
 					assert.NilError(t, errTmpFile)
