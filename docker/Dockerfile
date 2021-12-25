@@ -1,4 +1,4 @@
-FROM golang:1.15 as goBuilder
+FROM golang:1.17 as goBuilder
 
 COPY . /go/src/github.com/CreMindES/whalelint/
 

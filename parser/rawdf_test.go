@@ -1,7 +1,7 @@
 package parser_test
 
 import (
-	"io/ioutil"
+	"os"
 	"syscall"
 	"testing"
 
@@ -212,7 +212,7 @@ func TestRawDockerfileParser_ParseDockerfile(t *testing.T) {
 			filePath := ""
 
 			if testCase.FileExists {
-				tmpFile, errCreate := ioutil.TempFile("", "test_rawdf.*")
+				tmpFile, errCreate := os.CreateTemp("", "test_rawdf.*")
 				assert.Nil(t, errCreate)
 				_, errWrite := tmpFile.WriteString(testCase.FileContent)
 				assert.Nil(t, errWrite)

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -219,7 +218,7 @@ func IsUnixPortValid(portParam interface{}) bool {
 
 func ReadFileContents(filePath string) (string, error) {
 	// TODO: migrate to 1.16 os.ReadFile
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
