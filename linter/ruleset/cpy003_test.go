@@ -48,7 +48,7 @@ func TestValidateCpy003(t *testing.T) {
 			t.Parallel()
 
 			command := &instructions.CopyCommand{
-				SourcesAndDest: []string{},
+				SourcesAndDest: instructions.SourcesAndDest{},
 				From:           "",
 				Chown:          testCase.ChownValue,
 				Chmod:          "",

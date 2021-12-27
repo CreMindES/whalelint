@@ -45,11 +45,16 @@ func TestValidateCpy004(t *testing.T) {
 		t.Run(testCase.CommandParam, func(t *testing.T) {
 			t.Parallel()
 
+			commandArgs := strings.Fields(testCase.CommandParam)
 			command := &instructions.CopyCommand{
-				SourcesAndDest: strings.Fields(testCase.CommandParam),
-				From:           "",
-				Chown:          "",
-				Chmod:          "",
+				SourcesAndDest: instructions.SourcesAndDest{
+					DestPath:       commandArgs[len(commandArgs)-1],
+					SourcePaths:    commandArgs[:len(commandArgs)-1],
+					SourceContents: nil,
+				},
+				From:  "",
+				Chown: "",
+				Chmod: "",
 			}
 
 			result := !RuleSet.ValidateCpy004(command).IsViolated()

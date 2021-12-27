@@ -28,7 +28,7 @@ func ValidateCpy001(copyCommand *instructions.CopyCommand) RuleValidationResult 
 		result.SetViolated()
 		result.message = "Flags must be prefixed with exactly two dashes."
 
-		wrongFlagStr := regexpWrongNumberOfDashViolation.FindString(copyCommand.SourcesAndDest[0])
+		wrongFlagStr := regexpWrongNumberOfDashViolation.FindString(copyCommand.SourcesAndDest.SourcePaths[0])
 		result.LocationRange = ParseLocationFromRawParser(wrongFlagStr, copyCommand.Location())
 	}
 
