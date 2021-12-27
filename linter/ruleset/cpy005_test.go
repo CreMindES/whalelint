@@ -41,8 +41,13 @@ func TestValidateCpy005(t *testing.T) {
 		t.Run(testCase.ExampleName, func(t *testing.T) {
 			t.Parallel()
 
+			commandArgs := strings.Fields(testCase.CommandParam)
 			command := &instructions.CopyCommand{
-				SourcesAndDest: strings.Fields(testCase.CommandParam),
+				SourcesAndDest: instructions.SourcesAndDest{
+					DestPath: commandArgs[len(commandArgs)-1],
+					SourcePaths: commandArgs[:len(commandArgs)-1],
+					SourceContents: nil,
+				},
 				From:           "",
 				Chown:          "",
 				Chmod:          "",

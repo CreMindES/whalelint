@@ -20,7 +20,7 @@ func ValidateCpy005(copyCommand *instructions.CopyCommand) RuleValidationResult 
 		LocationRange: LocationRangeFromCommand(copyCommand),
 	}
 
-	fileExt := path.Ext(copyCommand.SourcesAndDest[0])
+	fileExt := path.Ext(copyCommand.SourcesAndDest.SourcePaths[0])
 	for _, archiveExt := range archiveExtensionList {
 		if fileExt == archiveExt {
 			result.SetViolated()

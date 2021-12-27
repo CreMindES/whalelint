@@ -15,9 +15,9 @@ func ValidateCpy004(copyCommand *instructions.CopyCommand) RuleValidationResult 
 		LocationRange: LocationRangeFromCommand(copyCommand),
 	}
 
-	sourceCount := len(copyCommand.SourcesAndDest.Sources())
+	sourceCount := len(copyCommand.SourcesAndDest.SourcePaths)
 	// in case of CPY002 violation, the flag can end up in the sources list
-	for _, src := range copyCommand.SourcesAndDest {
+	for _, src := range copyCommand.SourcesAndDest.SourcePaths {
 		if strings.HasPrefix(src, "-") {
 			sourceCount--
 		}
@@ -25,7 +25,7 @@ func ValidateCpy004(copyCommand *instructions.CopyCommand) RuleValidationResult 
 
 	if sourceCount > 1 {
 		// is valid
-		destination := copyCommand.SourcesAndDest.Dest()
+		destination := copyCommand.SourcesAndDest.DestPath
 		destinationLastChar := destination[len(destination)-1]
 		result.SetViolated(destinationLastChar != '/')
 		// location
