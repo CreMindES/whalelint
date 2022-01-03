@@ -58,7 +58,7 @@
   "dependencies": {
     "get-port": "^5.1.1",
     "json-rpc2": "^2.0.0",
-    "vsce": "^1.99.0",
+    "vsce": "^2.6.1",
     "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
