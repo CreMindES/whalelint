@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import getPort = require('get-port');
-import net = require('net');
-import path = require('path');
+import * as net from 'net';
+import * as path from 'path';
 import {
 	CloseAction,
 	ErrorAction,
