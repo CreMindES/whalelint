@@ -1,5 +1,5 @@
 
-import vscode = require('vscode');
+import * as vscode from 'vscode';
 
 // statusbar item for switching the Go environment
 export let whalelintEnvStatusbarItem: vscode.StatusBarItem;
