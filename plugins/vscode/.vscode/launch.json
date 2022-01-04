@@ -23,9 +23,13 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
+				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
 			],
+			"env": {
+				// "ELECTRON_ENABLE_LOGGING": "false"
+			},
 			"outFiles": [
 				"${workspaceFolder}/out/test/**/*.js"
 			],

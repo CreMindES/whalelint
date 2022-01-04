@@ -1,0 +1,46 @@
+name: build-vscode-extension
+on: 
+  pull_request:
+    paths:
+      - 'plugins/vscode/**'
+      - '.github/workflows/build-vscode-extension.yml'
+  push:
+    # paths:
+    #   - './plugins/vscode/**'
+    #   - '.github/workflows/build-vscode-extension.yml'
+    # tags:
+    #   - '**'
+jobs:
+  build-vscode-extension:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest] #, macos-latest]
+    defaults:
+      run:
+        working-directory: 'plugins/vscode/'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install packages
+        run: npm install
+      - name: Copy VSCode settings for test
+        run: |
+          id;
+          mkdir "${{ runner.temp }}/User";
+          echo "${{ runner.temp }};
+          cp src/test/e2e/examples/settings.json "${{ runner.temp }}/User/settings.json;
+      - name: Test compile
+        run: npm run test-compile
+      - name: Download WhaleLint executable
+        run: |
+          docker pull ghcr.io/cremindes/whalelint:latest;
+          image=$(docker create ghcr.io/cremindes/whalelint:latest)
+          docker cp $image:/usr/local/bin/whalelint ./;
+          docker rm $image;
+      - run: xvfb-run -a npm run test
+        if: runner.os == 'Linux'
