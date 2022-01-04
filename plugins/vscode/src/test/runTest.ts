@@ -14,8 +14,8 @@ async function main() {
 
 		const launchArgs = [
 			"-n",
-//			"--user-data-dir='../../test/e2e/examples/'",
-			"--user-data-dir=/home/runner/work/_temp",
+			process.env.TMP_DIR_PATH ? process.env.TMP_DIR_PATH : "--user-data-dir=/tmp",
+      		"--disable-dev-shm-usage"
 		];
 
 		// Download VS Code, unzip it and run the integration test

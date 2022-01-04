@@ -5,6 +5,7 @@ on:
       - 'plugins/vscode/**'
       - '.github/workflows/build-vscode-extension.yml'
   push:
+    # TODO: GH-#280
     # paths:
     #   - './plugins/vscode/**'
     #   - '.github/workflows/build-vscode-extension.yml'
@@ -44,3 +45,6 @@ jobs:
           docker rm $image;
       - run: xvfb-run -a npm run test
         if: runner.os == 'Linux'
+        env: {
+          TMP_DIR_PATH: "${{ runner.temp }}"
+        }
