@@ -49,6 +49,7 @@ jobs:
       - name: Copy static files
         run: |
           cp ../../LICENSE ./
+          cp ../../CHANGELOG.md ./
           convert ../../docs/icon.svg dist/icon.png
         working-directory: ./plugins/vscode
       - name: Build VSCode extension

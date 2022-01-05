@@ -1,5 +1,19 @@
 # Change Log
 
+## v0.0.8 - 5th January 2022
+
+### Engine
+- Upgrade to Go 1.17.
+- CI - optimization
+
+# VSCode Extension
+- Bump dependency versions.
+- Fix non-terminating engine instance
+- CI - testing + publishing
+
+# JetBrains Plugin
+- TODO
+
 ## v0.0.7 - 12th March 2021
 
 - Support, i.e exception for special empty image "scratch".
