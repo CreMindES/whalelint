@@ -46,11 +46,11 @@ jobs:
       - name: Install packages
         run: npm install && npm install -g vsce
         working-directory: ./plugins/vscode
-      - name: Copy static files
+      - name: Generate static files
         run: |
           cp ../../LICENSE ./
           cp ../../CHANGELOG.md ./
-          convert ../../docs/icon.svg dist/icon.png
+          convert -quiet -background none -trim -size 128 ../../docs/icon.svg ./icon.png || true
         working-directory: ./plugins/vscode
       - name: Build VSCode extension
         run: vsce package v0.0.9 --no-git-tag-version && ls -lah
