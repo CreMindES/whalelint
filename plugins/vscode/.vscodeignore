@@ -1,6 +1,5 @@
 .vscode/**
 .vscode-test/**
-out/test/**
 src/**
 .gitignore
 .yarnrc
@@ -10,6 +9,8 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 node_modules
-out/
+out/**
 tsconfig.json
 webpack.config.js
+*.vsix
+*.bak

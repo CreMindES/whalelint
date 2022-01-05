@@ -12,7 +12,7 @@ jobs:
       - name: Get version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
         if: startsWith(github.ref, 'refs/tags/v')
-      - name: Get version fallback
+      - name: Get version fallback  # used for debugging
         run: echo "RELEASE_VERSION=last_ci_build" >> $GITHUB_ENV
         if: startsWith(github.ref, 'refs/tags/v') == false
       - name: Login to ghcr.io
@@ -21,8 +21,43 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
+      # WhaleLint Engine + Docker image
       - name: Build WhaleLint Engine Docker image
         run: |
           docker build -f docker/Dockerfile . -t ghcr.io/cremindes/whalelint:${{ env.RELEASE_VERSION }}
           docker push ghcr.io/cremindes/whalelint:${{ env.RELEASE_VERSION }}
-        
+      - name: Prepare further steps
+        run: |
+          # copy WhaleLint Engine from previously built Docker image
+          image=$(docker create ghcr.io/cremindes/whalelint:latest)
+          docker cp $image:/usr/local/bin/whalelint ./;
+          docker rm $image;
+          # copy WhaleLint Engine binary to plugin folders
+          cp whalelint plugins/vscode/
+          cp whalelint plugins/jetbrains/
+      - name: Upload WhaleLint Engine as release artifact
+        run: |
+          echo "TODO"
+      # Build VSCode extension
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install packages
+        run: npm install && npm install -g vsce
+        working-directory: ./plugins/vscode
+      - name: Copy static files
+        run: |
+          cp ../../LICENSE ./
+          convert ../../docs/icon.svg dist/icon.png
+        working-directory: ./plugins/vscode
+      - name: Build VSCode extension
+        run: vsce package v0.0.9 --no-git-tag-version && ls -lah
+        working-directory: ./plugins/vscode
+      - name: Publish VSCode extension
+        run: vsce publish $RELEASE_VERSION
+        working-directory: ./plugins/vscode
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        if: success() && startsWith( github.ref, 'refs/tags/v') 
+      # JetBriains plugin - TODO
