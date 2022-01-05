@@ -6,11 +6,11 @@ on:
       - '.github/workflows/build-vscode-extension.yml'
   push:
     # TODO: GH-#280
-    # paths:
-    #   - './plugins/vscode/**'
-    #   - '.github/workflows/build-vscode-extension.yml'
-    # tags:
-    #   - '**'
+    paths:
+      - './plugins/vscode/**'
+      - '.github/workflows/build-vscode-extension.yml'
+    tags-ignore:
+      - '*.*'
 jobs:
   build-vscode-extension:
     runs-on: ${{ matrix.os }}
