@@ -1,0 +1,18 @@
+name: release
+on:
+  push:
+    tags: 
+      - "v*.*.*"
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Build WhaleLint Engine Docker image
+        run: |
+          docker build -f docker/Dockerfile . -t ghcr.io/cremindes/whalelint:${{ env.RELEASE_VERSION }}
+          docker push ghcr.io/cremindes/whalelint:${{ env.RELEASE_VERSION }}
+        
