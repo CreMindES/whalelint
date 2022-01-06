@@ -53,12 +53,53 @@ jobs:
           convert -quiet -background none -trim -size 128 ../../docs/icon.svg ./icon.png || true
         working-directory: ./plugins/vscode
       - name: Build VSCode extension
-        run: vsce package v0.0.9 --no-git-tag-version && ls -lah
+        run: vsce package && ls -lah
         working-directory: ./plugins/vscode
       - name: Publish VSCode extension
-        run: vsce publish $RELEASE_VERSION
+        run: vsce publish -i "whalelint-$RELEASE_VERSION.vsix"
         working-directory: ./plugins/vscode
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        if: success() && startsWith( github.ref, 'refs/tags/v') 
-      # JetBriains plugin - TODO
+          VSCE_PAT: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+        if: success() && startsWith( github.ref, 'refs/tags/v')
+      - name: Upload VSCode extension artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} JetBrainsPlugin ${{ runner.os }}
+          path: ${{ github.workspace }}/plugins/vscode/dist/whalelint-v0.0.8.zip
+          retention-days: 7
+      # JetBrains plugin
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Build with Gradle
+        run: ./gradlew buildPlugin
+        working-directory: ./plugins/jetbrains
+      - name: Verify plugin
+        run: ./gradlew buildPlugin
+        working-directory: ./plugins/jetbrains
+      - name: Cleanup Gradle cache
+        # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+        # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
+      - name: Read version
+        id: read_version
+        run: |
+          echo ::set-output name=semanticVersion::$(./gradlew properties | grep version | cut -d" " -f2-)
+      - name: Upload JetBrains plugin aArtifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: whalelint-${{ github.sha }} JetBrainsPlugin ${{ runner.os }}
+          path: ${{ github.workspace }}/plugins/jetbrains/build/distributions/whalelint-${{ steps.read_version.outputs.semanticVersion }}.zip
+          retention-days: 7
