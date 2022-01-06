@@ -13,8 +13,12 @@ jobs:
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
         if: startsWith(github.ref, 'refs/tags/v')
       - name: Get version fallback  # used for debugging
-        run: echo "RELEASE_VERSION=last_ci_build" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=${GITHUB_SHA::7}" >> $GITHUB_ENV
         if: startsWith(github.ref, 'refs/tags/v') == false
+      # Check versions
+      - name: Check versions
+        run: echo "TODO"
+        if: startsWith( github.ref, 'refs/tags/v')
       - name: Login to ghcr.io
         uses: docker/login-action@v1
         with:
@@ -53,10 +57,10 @@ jobs:
           convert -quiet -background none -trim -size 128 ../../docs/icon.svg ./icon.png || true
         working-directory: ./plugins/vscode
       - name: Build VSCode extension
-        run: vsce package -o "whalelint-$RELEASE_VERSION.vsix" && ls -lah
+        run: vsce package -o "whalelint-${{ env.RELEASE_VERSION }}.vsix" && ls -lah
         working-directory: ./plugins/vscode
       - name: Publish VSCode extension
-        run: vsce publish -i "whalelint-$RELEASE_VERSION.vsix"
+        run: vsce publish -i "whalelint-${{ env.RELEASE_VERSION }}.vsix"
         working-directory: ./plugins/vscode
         env:
           VSCE_PAT: ${{ secrets.AZURE_DEVOPS_TOKEN }}
@@ -64,8 +68,8 @@ jobs:
       - name: Upload VSCode extension artifact
         uses: actions/upload-artifact@v2
         with:
-          name: whalelint-${{ github.sha }} JetBrainsPlugin ${{ runner.os }}
-          path: ${{ github.workspace }}/plugins/vscode/whalelint-v0.0.8.zip
+          name: whalelint-vscode-extension-${{ env.RELEASE_VERSION }}
+          path: "${{ github.workspace }}/plugins/vscode/whalelint-${{ env.RELEASE_VERSION }}.vsix"
           retention-days: 7
       # JetBrains plugin
       - name: Set up JDK 1.8
@@ -82,9 +86,9 @@ jobs:
         run: |
           echo ::set-output name=semanticVersion::$(./gradlew properties | grep version | cut -d" " -f2-)
         working-directory: ./plugins/jetbrains
-      - name: Upload JetBrains plugin aArtifact
+      - name: Upload JetBrains plugin artifact
         uses: actions/upload-artifact@v2
         with:
-          name: whalelint-${{ github.sha }} JetBrainsPlugin ${{ runner.os }}
+          name: whalelint-jetbrains-plugin-${{ env.RELEASE_VERSION }}
           path: ${{ github.workspace }}/plugins/jetbrains/build/distributions/whalelint-${{ steps.read_version.outputs.semanticVersion }}.zip
           retention-days: 7
