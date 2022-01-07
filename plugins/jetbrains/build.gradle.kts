@@ -1,17 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.platform.TargetPlatformVersion.NoVersion.description
 
+fun properties(key: String) = project.findProperty(key).toString()
+
 plugins {
-    id("org.jetbrains.intellij") version "0.7.2"
-    id("org.jetbrains.kotlin.jvm") version "1.4.21"
+    id("org.jetbrains.intellij") version "1.3.0"
+    id("org.jetbrains.kotlin.jvm") version "1.6.10"
     id("org.kordamp.gradle.markdown") version "2.2.0"
     id("java")
 }
 
-group = "WhaleLint"
-version = "0.0.7"
+group = properties("pluginGroup")
+version = properties("pluginVersion")
 
-description = "WhaleLint is a Dockerfile linter written in Golang."
+description = properties("pluginDescription")
 
 repositories {
     mavenCentral()
@@ -19,16 +21,16 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.code.gson:gson:2.8.6" )
-    implementation("org.jetbrains:annotations:20.1.0")
-    runtimeOnly(group = "commons-io", name = "commons-io", version = "2.6")
+    implementation("com.google.code.gson:gson:2.8.9" )
+    implementation("org.jetbrains:annotations:23.0.0")
+    runtimeOnly(group = "commons-io", name = "commons-io", version = "2.11.0")
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = "2020.3"
-    pluginName = "whalelint"
-    updateSinceUntilBuild = false
+    pluginName.set(properties("pluginName"))
+    updateSinceUntilBuild.set(false)
+    version.set(properties("platformVersion"))
     // setPlugins("Docker:$version")
 }
 
@@ -50,15 +52,15 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
 
 
     if (file(changelogPath).exists()) {
-        changeNotes(file(changelogPath).readText())
+        changeNotes.set(file(changelogPath).readText())
     }
     if (file(readmePath).exists()) {
-        pluginDescription(file(readmePath).readText().replace(
+        pluginDescription.set(file(readmePath).readText().replace(
             "<h1>WhaleLint JetBrains Plugin</h1>", "").replace(
             "<h2>Introduction</h2>", ""))
     }
 
-    version("0.0.7")
+    version.set(properties("pluginVersion"))
 }
 
 tasks.withType<JavaCompile> {
@@ -91,5 +93,5 @@ tasks.buildPlugin {
 
 tasks.publishPlugin {
     dependsOn("copyChangelogAndReadme", "markdownToHtml")
-    token(System.getenv("JETBRAINS_TOKEN"))
+    token.set(System.getenv("JETBRAINS_TOKEN"))
 }
