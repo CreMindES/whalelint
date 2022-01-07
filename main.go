@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 	log.Debug("We have", RuleSet.Get().Count(), "ruleset.")
 
 	// Get arguments
