@@ -78,13 +78,25 @@ jobs:
           java-version: 1.8
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
+      - name: Set version for JetBrains plugin
+        run: sed -ri "s/pluginVersion = .*/pluginVersion = ${{ env.RELEASE_VERSION }}/g" gradle.properties
+        working-directory: ./plugins/jetbrains
       - name: Build with Gradle
-        run: ./gradlew buildPlugin && ls -lah ${{ github.workspace }}/plugins/jetbrains/build/distributions/
+        run: |
+          ./gradlew buildPlugin 
+          ls -lah ${{ github.workspace }}/plugins/jetbrains/build/distributions/
         working-directory: ./plugins/jetbrains
       - name: Read version
         id: read_version
         run: |
           echo ::set-output name=semanticVersion::$(./gradlew properties | grep version | cut -d" " -f2-)
+        working-directory: ./plugins/jetbrains
+      # https://github.com/actions/upload-artifact/issues/39
+      - name: Workaround for 2+ years old GitHub Action Upload Artifact issue
+        run: |
+          rm whalelint
+          unzip whalelint-${{ env.RELEASE_VERSION }}.zip
+          mv whalelint whalelint-${{ env.RELEASE_VERSION }}
         working-directory: ./plugins/jetbrains
       - name: Upload JetBrains plugin artifact
         uses: actions/upload-artifact@v2
