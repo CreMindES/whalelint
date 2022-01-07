@@ -3,13 +3,13 @@ FROM golang:1.17 as goBuilder
 COPY . /go/src/github.com/CreMindES/whalelint/
 
 WORKDIR /go/src/github.com/CreMindES/whalelint/
-RUN CGO_ENABLED=0 go build -o /app/whalelint
+RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o /app/whalelint
 
 FROM hairyhenderson/upx:3.96 as upxBuilder
 
 WORKDIR /app
 COPY --from=goBuilder /app/whalelint /app/whalelint
-RUN upx whalelint
+RUN upx -9 whalelint
 
 FROM scratch
 
