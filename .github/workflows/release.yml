@@ -33,7 +33,7 @@ jobs:
       - name: Prepare further steps
         run: |
           # copy WhaleLint Engine from previously built Docker image
-          image=$(docker create ghcr.io/cremindes/whalelint:latest)
+          image=$(docker create ghcr.io/cremindes/whalelint:${{ env.RELEASE_VERSION }})
           docker cp $image:/usr/local/bin/whalelint ./;
           docker rm $image;
           # copy WhaleLint Engine binary to plugin folders
