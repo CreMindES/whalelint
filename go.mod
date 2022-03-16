@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/alecthomas/kong v0.2.22
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/dustin/go-humanize v1.0.0
@@ -12,7 +11,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/moby/buildkit v0.9.3
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/zoumo/goset v0.2.0
 	gotest.tools v2.2.0+incompatible
 	robpike.io/filter v0.0.0-20150108201509-2984852a2183
