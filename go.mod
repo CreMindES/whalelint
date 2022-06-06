@@ -11,7 +11,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/moby/buildkit v0.9.3
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	github.com/zoumo/goset v0.2.0
 	gotest.tools v2.2.0+incompatible
 	robpike.io/filter v0.0.0-20150108201509-2984852a2183
@@ -40,5 +40,5 @@ require (
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
