@@ -11,7 +11,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/moby/buildkit v0.9.3
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.1
 	github.com/zoumo/goset v0.2.0
 	gotest.tools v2.2.0+incompatible
 	robpike.io/filter v0.0.0-20150108201509-2984852a2183
