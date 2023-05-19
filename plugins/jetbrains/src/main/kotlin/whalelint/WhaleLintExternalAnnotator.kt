@@ -129,7 +129,7 @@ class WhaleLintExternalAnnotator : ExternalAnnotator<PsiFile, List<ValidationRes
                 @Throws(IncorrectOperationException::class)
                 override fun invoke(project: Project, editor: Editor, file: PsiFile) {
                     browse("https://github.com/CreMindES/whalelint/tree/main/docs/rule/set/" +
-                            "${issue.rule!!.ruleId!!.toLowerCase()}.md")
+                            "${issue.rule!!.ruleId!!.lowercase()}.md")
                 }
 
                 override fun startInWriteAction(): Boolean {
@@ -151,7 +151,7 @@ class WhaleLintExternalAnnotator : ExternalAnnotator<PsiFile, List<ValidationRes
         private val LOG = Logger.getInstance(WhaleLintExternalAnnotator::class.java)
 
         private fun getHighlightSeverity(issue: ValidationResult.Issue): HighlightSeverity {
-            return when (issue.rule!!.severity!!.toLowerCase()) {
+            return when (issue.rule!!.severity!!.lowercase()) {
                 "deprecation" -> HighlightSeverity.WEAK_WARNING
                 "error" -> HighlightSeverity.ERROR
                 "info" -> HighlightSeverity.INFORMATION
